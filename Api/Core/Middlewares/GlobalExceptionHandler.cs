@@ -4,6 +4,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using System.Text.Json;
 
+
 namespace Api.Core.Middlewares;
 
 public class GlobalExceptionHandler : IExceptionHandler

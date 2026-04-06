@@ -1,21 +1,70 @@
+
+using Api.Core.Middlewares;
+using Api.Core.Security;
+using Api.Data;
+using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
+using System.Text;
+using System.Text.Json.Serialization;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+});
 
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.SuppressModelStateInvalidFilter = true;
+});
+
+builder.Services.AddDataDependencies(builder.Configuration);
+
+builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+builder.Services.Configure<TokenOptions>(builder.Configuration.GetSection("TokenOptions"));
+
+var tokenOptions = builder.Configuration.GetSection("TokenOptions").Get<TokenOptions>() ?? throw new InvalidOperationException("TokenOptions bölümü yapılandırma dosyasında appsettings bulunamadı.");
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+  .AddJwtBearer(options =>
+  {
+      options.TokenValidationParameters = new TokenValidationParameters
+      {
+          ValidateIssuer = true,
+          ValidateAudience = true,
+          ValidateLifetime = true,
+          ValidIssuer = tokenOptions.Issuer,
+          ValidAudience = tokenOptions.Audience,
+          ValidateIssuerSigningKey = true,
+          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenOptions.SecurityKey)),
+          ClockSkew = TimeSpan.Zero
+      };
+  });
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
-  app.MapOpenApi();
+    app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
