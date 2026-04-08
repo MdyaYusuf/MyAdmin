@@ -9,12 +9,17 @@ using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
+using Api.Features.Users;
+using Api.Features.Permissions;
+using Api.Features.Roles;
+using Api.Features.RolePermissions;
+using Api.Features.UserRoles;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+  options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
 builder.Services.AddHttpContextAccessor();
@@ -23,10 +28,15 @@ builder.Services.AddProblemDetails();
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
-    options.SuppressModelStateInvalidFilter = true;
+  options.SuppressModelStateInvalidFilter = true;
 });
 
 builder.Services.AddDataDependencies(builder.Configuration);
+builder.Services.AddUserDependencies();
+builder.Services.AddRoleDependencies();
+builder.Services.AddPermissionDependencies();
+builder.Services.AddUserRoleDependencies();
+builder.Services.AddRolePermissionDependencies();
 
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
@@ -37,17 +47,17 @@ var tokenOptions = builder.Configuration.GetSection("TokenOptions").Get<TokenOpt
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
   .AddJwtBearer(options =>
   {
-      options.TokenValidationParameters = new TokenValidationParameters
-      {
-          ValidateIssuer = true,
-          ValidateAudience = true,
-          ValidateLifetime = true,
-          ValidIssuer = tokenOptions.Issuer,
-          ValidAudience = tokenOptions.Audience,
-          ValidateIssuerSigningKey = true,
-          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenOptions.SecurityKey)),
-          ClockSkew = TimeSpan.Zero
-      };
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+      ValidateIssuer = true,
+      ValidateAudience = true,
+      ValidateLifetime = true,
+      ValidIssuer = tokenOptions.Issuer,
+      ValidAudience = tokenOptions.Audience,
+      ValidateIssuerSigningKey = true,
+      IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenOptions.SecurityKey)),
+      ClockSkew = TimeSpan.Zero
+    };
   });
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -58,7 +68,7 @@ app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+  app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
