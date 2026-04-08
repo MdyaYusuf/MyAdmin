@@ -1,0 +1,39 @@
+﻿namespace Api.Features.Users;
+
+public sealed record CreateUserRequest(
+    string Username,
+    string Email,
+    string Password,
+    string? ProfileImageUrl,
+    string? Bio);
+
+public class UpdateUserRequest
+{
+  public Guid Id { get; set; }
+  public string Username { get; set; } = null!;
+  public string Email { get; set; } = null!;
+  public string? ProfileImageUrl { get; set; }
+  public string? Bio { get; set; }
+  public bool IsActive { get; set; }
+}
+public class UserResponseDto
+{
+  public Guid Id { get; set; }
+  public string Username { get; set; } = null!;
+  public string Email { get; set; } = null!;
+  public string? ProfileImageUrl { get; set; }
+  public string? Bio { get; set; }
+  public bool IsActive { get; set; }
+  public DateTime CreatedDate { get; set; }
+  public DateTime? UpdatedDate { get; set; }
+}
+
+public sealed record CreatedUserResponseDto(
+    Guid Id,
+    string Username,
+    string Email);
+
+public sealed record UserPreviewDto(
+    Guid Id,
+    string Username,
+    string? ProfileImageUrl);
