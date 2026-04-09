@@ -9,7 +9,7 @@ public partial class UserMapper
   [MapperIgnoreTarget(nameof(User.PasswordHash))]
   [MapperIgnoreTarget(nameof(User.PasswordKey))]
   public partial User CreateToEntity(CreateUserRequest request);
-
+  [MapperIgnoreTarget(nameof(User.ProfileImageUrl))]
   public partial void UpdateEntityFromRequest(UpdateUserRequest request, User entity);
 
   public partial UserResponseDto EntityToResponseDto(User entity);

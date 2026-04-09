@@ -6,6 +6,8 @@ public static class RoleRegistration
   {
     services.AddScoped<IRoleRepository, EfRoleRepository>();
     services.AddSingleton<RoleMapper>();
+    services.AddScoped<RoleBusinessRules>();
+    services.AddScoped<IRoleService, RoleService>();
 
     return services;
   }

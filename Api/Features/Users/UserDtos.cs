@@ -7,15 +7,12 @@ public sealed record CreateUserRequest(
   string? ProfileImageUrl,
   string? Bio);
 
-public class UpdateUserRequest
-{
-  public Guid Id { get; set; }
-  public string Username { get; set; } = null!;
-  public string Email { get; set; } = null!;
-  public string? ProfileImageUrl { get; set; }
-  public string? Bio { get; set; }
-  public bool IsActive { get; set; }
-}
+public sealed record UpdateUserRequest(
+  string Username,
+  string Email,
+  string? Bio,
+  IFormFile? ImageFile);
+
 public class UserResponseDto
 {
   public Guid Id { get; set; }

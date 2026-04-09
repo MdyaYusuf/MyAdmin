@@ -6,6 +6,8 @@ public static class UserRolesRegistration
   {
     services.AddScoped<IUserRoleRepository, EfUserRoleRepository>();
     services.AddSingleton<UserRoleMapper>();
+    services.AddScoped<UserRoleBusinessRules>();
+    services.AddScoped<IUserRoleService, UserRoleService>();
 
     return services;
   }

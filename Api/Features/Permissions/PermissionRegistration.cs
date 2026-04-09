@@ -6,6 +6,8 @@ public static class PermissionRegistration
   {
     services.AddScoped<IPermissionRepository, EfPermissionRepository>();
     services.AddSingleton<PermissionMapper>();
+    services.AddScoped<PermissionBusinessRules>();
+    services.AddScoped<IPermissionService, PermissionService>();
 
     return services;
   }

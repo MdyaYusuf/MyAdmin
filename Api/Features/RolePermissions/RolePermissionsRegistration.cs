@@ -6,6 +6,8 @@ public static class RolePermissionsRegistration
   {
     services.AddScoped<IRolePermissionRepository, EfRolePermissionRepository>();
     services.AddSingleton<RolePermissionMapper>();
+    services.AddScoped<RolePermissionBusinessRules>();
+    services.AddScoped<IRolePermissionService, RolePermissionService>();
 
     return services;
   }
