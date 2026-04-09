@@ -1,8 +1,8 @@
 ﻿namespace Api.Features.Permissions;
 
 public sealed record CreatePermissionRequest(
-    string Name,
-    string? Description);
+  string Name,
+  string? Description);
 
 public class UpdatePermissionRequest
 {
@@ -21,10 +21,10 @@ public class PermissionResponseDto
 }
 
 public sealed record CreatedPermissionResponseDto(
-    Guid Id,
-    string Name);
+  Guid Id,
+  string Name);
 
 public sealed record PermissionPreviewDto(
-    Guid Id,
-    string Name,
-    string? Description);
+  Guid Id,
+  string Name,
+  string? Description);

@@ -1,8 +1,8 @@
 ﻿namespace Api.Features.UserRoles;
 
 public sealed record CreateUserRoleRequest(
-    Guid UserId,
-    Guid RoleId);
+  Guid UserId,
+  Guid RoleId);
 
 public class UpdateUserRoleRequest
 {
@@ -21,11 +21,11 @@ public class UserRoleResponseDto
 }
 
 public sealed record CreatedUserRoleResponseDto(
-    Guid Id,
-    Guid UserId,
-    Guid RoleId);
+  Guid Id,
+  Guid UserId,
+  Guid RoleId);
 
 public sealed record UserRolePreviewDto(
-    Guid Id,
-    string Username,
-    string RoleName);
+  Guid Id,
+  string Username,
+  string RoleName);

@@ -1,8 +1,8 @@
 ﻿namespace Api.Features.RolePermissions;
 
 public sealed record CreateRolePermissionRequest(
-    Guid RoleId,
-    Guid PermissionId);
+  Guid RoleId,
+  Guid PermissionId);
 
 public class UpdateRolePermissionRequest
 {
@@ -21,11 +21,11 @@ public class RolePermissionResponseDto
 }
 
 public sealed record CreatedRolePermissionResponseDto(
-    Guid Id,
-    Guid RoleId,
-    Guid PermissionId);
+  Guid Id,
+  Guid RoleId,
+  Guid PermissionId);
 
 public sealed record RolePermissionPreviewDto(
-    Guid Id,
-    string RoleName,
-    string PermissionName);
+  Guid Id,
+  string RoleName,
+  string PermissionName);

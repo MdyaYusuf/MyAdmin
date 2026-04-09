@@ -1,9 +1,9 @@
 ﻿namespace Api.Features.Roles;
 
 public sealed record CreateRoleRequest(
-    string Name,
-    string? Description,
-    string? Label);
+  string Name,
+  string? Description,
+  string? Label);
 
 public class UpdateRoleRequest
 {
@@ -23,10 +23,10 @@ public class RoleResponseDto
 }
 
 public sealed record CreatedRoleResponseDto(
-    Guid Id,
-    string Name);
+  Guid Id,
+  string Name);
 
 public sealed record RolePreviewDto(
-    Guid Id,
-    string Name,
-    string? Label);
+  Guid Id,
+  string Name,
+  string? Label);

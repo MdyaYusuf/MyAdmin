@@ -1,11 +1,11 @@
 ﻿namespace Api.Features.Users;
 
 public sealed record CreateUserRequest(
-    string Username,
-    string Email,
-    string Password,
-    string? ProfileImageUrl,
-    string? Bio);
+  string Username,
+  string Email,
+  string Password,
+  string? ProfileImageUrl,
+  string? Bio);
 
 public class UpdateUserRequest
 {
@@ -29,11 +29,16 @@ public class UserResponseDto
 }
 
 public sealed record CreatedUserResponseDto(
-    Guid Id,
-    string Username,
-    string Email);
+  Guid Id,
+  string Username,
+  string Email);
 
 public sealed record UserPreviewDto(
-    Guid Id,
-    string Username,
-    string? ProfileImageUrl);
+  Guid Id,
+  string Username,
+  string? ProfileImageUrl);
+
+public sealed record ChangePasswordRequest(
+  string CurrentPassword,
+  string NewPassword,
+  string ConfirmNewPassword);
