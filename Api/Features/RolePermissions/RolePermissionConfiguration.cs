@@ -17,6 +17,8 @@ public class RolePermissionConfiguration : IEntityTypeConfiguration<RolePermissi
     builder.Property(rp => rp.RoleId).IsRequired();
     builder.Property(rp => rp.PermissionId).IsRequired();
 
+    builder.HasIndex(rp => new { rp.RoleId, rp.PermissionId }).IsUnique();
+
     builder.HasOne(rp => rp.Role)
       .WithMany(r => r.RolePermissions)
       .HasForeignKey(rp => rp.RoleId)

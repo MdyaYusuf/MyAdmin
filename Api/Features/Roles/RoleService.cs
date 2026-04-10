@@ -30,7 +30,7 @@ public class RoleService : IRoleService
     throw new NotImplementedException();
   }
 
-  public Task<ReturnModel<NoData>> UpdateAsync(UpdateRoleRequest request, CancellationToken cancellationToken = default)
+  public Task<ReturnModel<NoData>> UpdateAsync(Guid id, UpdateRoleRequest request, CancellationToken cancellationToken = default)
   {
     throw new NotImplementedException();
   }

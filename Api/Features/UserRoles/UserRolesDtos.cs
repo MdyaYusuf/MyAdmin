@@ -10,6 +10,7 @@ public class UpdateUserRoleRequest
   public Guid UserId { get; set; }
   public Guid RoleId { get; set; }
 }
+
 public class UserRoleResponseDto
 {
   public Guid Id { get; set; }

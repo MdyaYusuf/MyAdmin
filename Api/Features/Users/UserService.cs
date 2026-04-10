@@ -14,9 +14,7 @@ public class UserService(
   UserBusinessRules _businessRules,
   IUnitOfWork _unitOfWork,
   IValidator<UpdateUserRequest> _updateValidator,
-  IValidator<ChangePasswordRequest> _changePasswordValidator
-
-  ) : IUserService
+  IValidator<ChangePasswordRequest> _changePasswordValidator) : IUserService
 {
   public async Task<ReturnModel<List<UserResponseDto>>> GetAllAsync(
     Expression<Func<User, bool>>? filter = null, 
@@ -27,7 +25,7 @@ public class UserService(
     CancellationToken cancellationToken = default)
   {
     List<User> users = await _userRepository.GetAllAsync(
-      include: u => u.Include(u => u.Roles),
+      include: u => u.Include(u => u.UserRoles).ThenInclude(ur => ur.Role),
       cancellationToken: cancellationToken);
 
     List<UserResponseDto> response = _mapper.EntityToResponseDtoList(users);
@@ -48,8 +46,8 @@ public class UserService(
     CancellationToken cancellationToken = default)
   {
     var user = await _userRepository.GetAsync(
-      predicate: predicate, 
-      include: u => u.Include(u => u.Roles), 
+      predicate: predicate,
+      include: u => u.Include(u => u.UserRoles).ThenInclude(ur => ur.Role),
       enableTracking: enableTracking, 
       cancellationToken: cancellationToken);
 
@@ -81,7 +79,7 @@ public class UserService(
   {
     User user = await _businessRules.GetUserIfExistAsync(
       id: id,
-      include: u => u.Include(u => u.Roles),
+      include: u => u.Include(u => u.UserRoles).ThenInclude(ur => ur.Role),
       enableTracking: enableTracking,
       cancellationToken: cancellationToken);
 
@@ -174,7 +172,6 @@ public class UserService(
     };
   }
 
-
   public async Task<ReturnModel<NoData>> ChangePasswordAsync(ChangePasswordRequest request, Guid userId, CancellationToken cancellationToken = default)
   {
     var validationResult = await _changePasswordValidator.ValidateAsync(request, cancellationToken);
@@ -202,5 +199,4 @@ public class UserService(
       StatusCode = 200
     };
   }
-
 }

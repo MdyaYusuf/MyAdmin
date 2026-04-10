@@ -11,7 +11,6 @@ public class User : Entity<Guid>
   public User()
   {
     UserRoles = new HashSet<UserRole>();
-    Roles = new HashSet<Role>();
 
     Username = default!;
     Email = default!;
@@ -30,6 +29,5 @@ public class User : Entity<Guid>
   public bool IsActive { get; set; } = true;
 
   // Navigation properties
-  public virtual ICollection<Role> Roles { get; set; }
   public virtual ICollection<UserRole> UserRoles { get; set; }
 }

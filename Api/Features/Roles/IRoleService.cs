@@ -34,6 +34,7 @@ public interface IRoleService
     CancellationToken cancellationToken = default);
 
   Task<ReturnModel<NoData>> UpdateAsync(
+    Guid id,
     UpdateRoleRequest request,
     CancellationToken cancellationToken = default);
 }

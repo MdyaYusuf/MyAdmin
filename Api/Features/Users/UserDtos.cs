@@ -1,4 +1,6 @@
-﻿namespace Api.Features.Users;
+﻿using Api.Features.Roles;
+
+namespace Api.Features.Users;
 
 public sealed record CreateUserRequest(
   string Username,
@@ -23,6 +25,7 @@ public class UserResponseDto
   public bool IsActive { get; set; }
   public DateTime CreatedDate { get; set; }
   public DateTime? UpdatedDate { get; set; }
+  public List<RoleResponseDto> Roles { get; set; } = new();
 }
 
 public sealed record CreatedUserResponseDto(
