@@ -20,7 +20,7 @@ public interface IRoleService
     CancellationToken cancellationToken = default);
 
   Task<ReturnModel<RoleResponseDto>> GetByIdAsync(
-    int id,
+    Guid id,
     Func<IQueryable<Role>, IQueryable<Role>>? include = null,
     bool enableTracking = false,
     CancellationToken cancellationToken = default);
@@ -30,7 +30,7 @@ public interface IRoleService
     CancellationToken cancellationToken = default);
 
   Task<ReturnModel<NoData>> RemoveAsync(
-    int id,
+    Guid id,
     CancellationToken cancellationToken = default);
 
   Task<ReturnModel<NoData>> UpdateAsync(

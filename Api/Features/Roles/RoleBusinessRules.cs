@@ -4,7 +4,7 @@ namespace Api.Features.Roles;
 
 public class RoleBusinessRules(IRoleRepository _roleRepository)
 {
-  public async Task<Role> GetRoleIfExistAsync(Guid id, CancellationToken cancellationToken = default)
+  public async Task<Role> GetRoleIfExistAsync(Guid id, Func<IQueryable<Role>, IQueryable<Role>>? include = null, bool enableTracking=false, CancellationToken cancellationToken = default)
   {
     var role = await _roleRepository.GetByIdAsync(id, cancellationToken: cancellationToken);
 
