@@ -40,6 +40,7 @@ public class AuthenticationBusinessRules
       throw new NotFoundException("Token bulunamadı.");
     }
   }
+
   public void UserMustHavePermission(List<string> userPermissions, string requiredPermission)
   {
     if (!userPermissions.Contains(requiredPermission))

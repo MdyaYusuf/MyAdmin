@@ -1,5 +1,4 @@
-﻿using Api.Features.Authentication;
-using Api.Features.Roles;
+﻿using Api.Features.Roles;
 using Api.Features.UserRoles;
 using Riok.Mapperly.Abstractions;
 
@@ -13,7 +12,7 @@ public partial class UserMapper
   [MapperIgnoreSource(nameof(RegisterUserRequest.Password))]
   [MapperIgnoreTarget(nameof(User.PasswordHash))]
   [MapperIgnoreTarget(nameof(User.PasswordKey))]
-  public partial User CreateToEntity(RegisterUserRequest request);
+  public partial User RegisterToEntity(RegisterUserRequest request);
   [MapperIgnoreTarget(nameof(User.ProfileImageUrl))]
   public partial void UpdateEntityFromRequest(UpdateUserRequest request, User entity);
   [MapProperty(nameof(User.UserRoles), nameof(UserResponseDto.Roles))]

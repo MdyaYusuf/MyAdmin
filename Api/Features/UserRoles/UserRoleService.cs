@@ -1,50 +1,108 @@
-﻿using Api.Core.Responses;
-using System.Linq.Expressions;
+﻿using Api.Core.Repositories;
+using Api.Core.Responses;
+using Api.Features.Roles;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Features.UserRoles;
 
-public class UserRoleService : IUserRoleService
+public class UserRoleService(
+  IUserRoleRepository _userRoleRepository,
+  UserRoleBusinessRules _businessRules,
+  RoleMapper _roleMapper,
+  IUnitOfWork _unitOfWork) : IUserRoleService
 {
-  public Task<ReturnModel<CreatedUserRoleResponseDto>> AddAsync(CreateUserRoleRequest request, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> AssignRoleAsync(Guid userId, Guid roleId, CancellationToken cancellationToken = default)
   {
-    throw new NotImplementedException();
+    await _businessRules.UserRoleRelationMustNotBeDuplicateAsync(userId, roleId, cancellationToken);
+
+    await _userRoleRepository.AddAsync(new UserRole { UserId = userId, RoleId = roleId }, cancellationToken);
+    await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    return new ReturnModel<NoData>()
+    {
+      Success = true,
+      Message = "Rol başarıyla atandı.",
+      StatusCode = 201
+    };
   }
 
-  public Task<ReturnModel<List<UserRoleResponseDto>>> GetAllAsync(
-    Expression<Func<UserRole, bool>>? filter = null, 
-    Func<IQueryable<UserRole>, IQueryable<UserRole>>? include = null, 
-    Func<IQueryable<UserRole>, IOrderedQueryable<UserRole>>? orderBy = null, 
-    bool enableTracking = false, bool withDeleted = false, 
-    CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> RevokeRoleAsync(Guid userId, Guid roleId, CancellationToken cancellationToken = default)
   {
-    throw new NotImplementedException();
+    var userRole = await _userRoleRepository.GetAsync(ur => ur.UserId == userId && ur.RoleId == roleId);
+
+    if (userRole == null)
+    {
+      return new ReturnModel<NoData>()
+      {
+        Success = false,
+        Message = "Kullanıcı, rol ilişkisi bulunamadı.",
+        StatusCode = 404
+      };
+    }
+
+    _userRoleRepository.Delete(userRole);
+    await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    return new ReturnModel<NoData>()
+    {
+      Success = true,
+      Message = "Rol yetkisi kaldırıldı.",
+      StatusCode = 200
+    };
   }
 
-  public Task<ReturnModel<UserRoleResponseDto>> GetAsync(
-    Expression<Func<UserRole, bool>> predicate, 
-    Func<IQueryable<UserRole>, IQueryable<UserRole>>? include = null, 
-    bool enableTracking = false, 
-    CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> SyncUserRolesAsync(Guid userId, List<Guid> roleIds, CancellationToken cancellationToken = default)
   {
-    throw new NotImplementedException();
+    var currentRoles = await _userRoleRepository.GetAllAsync(ur => ur.UserId == userId, enableTracking: true);
+
+    // Silinecekler
+    var toDelete = currentRoles.Where(ur => !roleIds.Contains(ur.RoleId)).ToList();
+
+    foreach (var ur in toDelete)
+    {
+      _userRoleRepository.Delete(ur);
+    }
+
+    // Eklenecekler
+    var toAdd = roleIds
+      .Where(id => !currentRoles.Any(ur => ur.RoleId == id))
+      .Select(id => new UserRole { UserId = userId, RoleId = id });
+
+    foreach (var ur in toAdd)
+    {
+      await _userRoleRepository.AddAsync(ur, cancellationToken);
+    }
+
+    await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    return new ReturnModel<NoData>()
+    {
+      Success = true,
+      Message = "Kullanıcı rolleri senkronize edildi.",
+      StatusCode = 200
+    };
   }
 
-  public Task<ReturnModel<UserRoleResponseDto>> GetByIdAsync(
-    Guid id, Func<IQueryable<UserRole>, 
-      IQueryable<UserRole>>? include = null, 
-    bool enableTracking = false, 
-    CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<List<RoleResponseDto>>> GetRolesByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
   {
-    throw new NotImplementedException();
-  }
+    var userRoles = await _userRoleRepository.GetAllAsync(
+      filter: ur => ur.UserId == userId,
+      include: q => q.Include(ur => ur.Role),
+      cancellationToken: cancellationToken);
 
-  public Task<ReturnModel<NoData>> RemoveAsync(Guid id, CancellationToken cancellationToken = default)
-  {
-    throw new NotImplementedException();
-  }
+    var roles = userRoles
+      .Where(ur => ur.Role != null)
+      .Select(ur => ur.Role!)
+      .ToList();
 
-  public Task<ReturnModel<NoData>> UpdateAsync(UpdateUserRoleRequest request, CancellationToken cancellationToken = default)
-  {
-    throw new NotImplementedException();
+    List<RoleResponseDto> response = _roleMapper.EntityToResponseDtoList(roles);
+
+    return new ReturnModel<List<RoleResponseDto>>()
+    {
+      Success = true,
+      Message = "Kullanıcı rolleri başarıyla getirildi.",
+      Data = response,
+      StatusCode = 200
+    };
   }
 }

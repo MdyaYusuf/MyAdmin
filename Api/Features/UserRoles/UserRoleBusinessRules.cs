@@ -10,7 +10,7 @@ public class UserRoleBusinessRules(IUserRoleRepository _userRoleRepository)
 
     if (ur == null)
     {
-      throw new NotFoundException("Kullanıcı-Rol ilişkisi bulunamadı.");
+      throw new NotFoundException("Kullanıcı, rol ilişkisi bulunamadı.");
     }
 
     return ur;

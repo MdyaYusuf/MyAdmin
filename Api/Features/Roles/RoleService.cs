@@ -7,16 +7,15 @@ using System.Linq.Expressions;
 namespace Api.Features.Roles;
 
 public class RoleService(
-    IRoleRepository _roleRepository,
-    RoleMapper _mapper,
-    RoleBusinessRules _businessRules,
-    IUnitOfWork _unitOfWork,
-    IValidator<CreateRoleRequest> _createValidator,
-    IValidator<UpdateRoleRequest> _updateValidator) : IRoleService
+  IRoleRepository _roleRepository,
+  RoleMapper _mapper,
+  RoleBusinessRules _businessRules,
+  IUnitOfWork _unitOfWork,
+  IValidator<CreateRoleRequest> _createValidator,
+  IValidator<UpdateRoleRequest> _updateValidator) : IRoleService
 {
   public async Task<ReturnModel<RoleResponseDto>> AddAsync(CreateRoleRequest request, CancellationToken cancellationToken = default)
   {
-
     var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
 
     if (!validationResult.IsValid)
@@ -26,12 +25,12 @@ public class RoleService(
 
     await _businessRules.RoleNameMustBeUniqueAsync(request.Name, cancellationToken: cancellationToken);
 
-    Role role = _mapper.CreateToEntity(request);
+    Role createdRole = _mapper.CreateToEntity(request);
 
-    await _roleRepository.AddAsync(role, cancellationToken);
+    await _roleRepository.AddAsync(createdRole, cancellationToken);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-    var response = _mapper.EntityToResponseDto(role);
+    RoleResponseDto response = _mapper.EntityToResponseDto(createdRole);
 
     return new ReturnModel<RoleResponseDto>
     {
@@ -51,15 +50,15 @@ public class RoleService(
     CancellationToken cancellationToken = default)
   {
     List<Role> roles = await _roleRepository.GetAllAsync(
-       filter: filter,
-       include: r => r.Include(r => r.RolePermissions).ThenInclude(rp => rp.Permission),
-       orderBy: orderBy,
-       enableTracking: enableTracking,
-       withDeleted: withDeleted);
+      filter: filter,
+      include: r => r.Include(r => r.RolePermissions).ThenInclude(rp => rp.Permission),
+      orderBy: orderBy,
+      enableTracking: enableTracking,
+      withDeleted: withDeleted);
 
     List<RoleResponseDto> response = _mapper.EntityToResponseDtoList(roles);
 
-    return new ReturnModel<List<RoleResponseDto>>
+    return new ReturnModel<List<RoleResponseDto>>()
     {
       Success = true,
       Message = "Roller başarıyla getirildi.",
@@ -91,34 +90,39 @@ public class RoleService(
       };
     }
 
-    var roleResponse = _mapper.EntityToResponseDto(role);
+    var response = _mapper.EntityToResponseDto(role);
 
     return new ReturnModel<RoleResponseDto>()
     {
       Success = true,
       Message = "Rol başarıyla getirildi.",
-      Data = roleResponse,
+      Data = response,
       StatusCode = 200
     };
   }
 
-  public async Task<ReturnModel<RoleResponseDto>> GetByIdAsync(Guid id, Func<IQueryable<Role>, IQueryable<Role>>? include = null, bool enableTracking = false, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<RoleResponseDto>> GetByIdAsync(
+    Guid id,
+    Func<IQueryable<Role>, IQueryable<Role>>? include = null,
+    bool enableTracking = false,
+    CancellationToken cancellationToken = default)
   {
     Role role = await _businessRules.GetRoleIfExistAsync(id, include, enableTracking, cancellationToken);
-    var roleResponse = _mapper.EntityToResponseDto(role);
+
+    RoleResponseDto response = _mapper.EntityToResponseDto(role);
 
     return new ReturnModel<RoleResponseDto>()
     {
       Success = true,
-      Message = "Rol başarıyla getirildi.",
-      Data = roleResponse,
+      Message = $"{id} numaralı rol başarılı bir şekilde getirildi.",
+      Data = response,
       StatusCode = 200
     };
   }
 
   public async Task<ReturnModel<NoData>> RemoveAsync(Guid id, CancellationToken cancellationToken = default)
   {
-    var role = await _businessRules.GetRoleIfExistAsync(id, enableTracking: true, cancellationToken: cancellationToken);
+    Role role = await _businessRules.GetRoleIfExistAsync(id, enableTracking: true, cancellationToken: cancellationToken);
 
     _roleRepository.Delete(role);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -141,14 +145,14 @@ public class RoleService(
       throw new ValidationException(validationResult.Errors);
     }
 
-    var role = await _businessRules.GetRoleIfExistAsync(id, enableTracking: true, cancellationToken: cancellationToken);
+    Role existingRole = await _businessRules.GetRoleIfExistAsync(id, enableTracking: true, cancellationToken: cancellationToken);
 
-    _mapper.UpdateEntityFromRequest(request, role);
+    _mapper.UpdateEntityFromRequest(request, existingRole);
 
-    _roleRepository.Update(role);
+    _roleRepository.Update(existingRole);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-    return new ReturnModel<NoData>
+    return new ReturnModel<NoData>()
     {
       Success = true,
       Message = "Rol başarıyla güncellendi.",

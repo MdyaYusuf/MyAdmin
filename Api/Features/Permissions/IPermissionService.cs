@@ -30,6 +30,7 @@ public interface IPermissionService
     CancellationToken cancellationToken = default);
 
   Task<ReturnModel<NoData>> UpdateAsync(
+    Guid id,
     UpdatePermissionRequest request,
     CancellationToken cancellationToken = default);
 

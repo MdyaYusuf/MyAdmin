@@ -2,7 +2,7 @@
 
 namespace Api.Features.Users;
 
-public sealed record CreateUserRequest(
+public sealed record RegisterUserRequest(
   string Username,
   string Email,
   string Password,

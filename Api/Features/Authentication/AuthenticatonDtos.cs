@@ -7,5 +7,5 @@ public record TokenResponseDto(
   DateTime Expiration,
   string RefreshToken,
   UserResponseDto User);
+
 public sealed record LoginRequest(string Email, string Password);
-public sealed record RegisterUserRequest(string Username, string Email, string Password);
