@@ -7,6 +7,7 @@ namespace Api.Features.UserRoles;
 
 public class UserRoleService(
   IUserRoleRepository _userRoleRepository,
+  IRoleRepository _roleRepository,
   UserRoleBusinessRules _businessRules,
   RoleMapper _roleMapper,
   IUnitOfWork _unitOfWork) : IUserRoleService
@@ -53,47 +54,44 @@ public class UserRoleService(
 
   public async Task<ReturnModel<NoData>> SyncUserRolesAsync(Guid userId, List<Guid> roleIds, CancellationToken cancellationToken = default)
   {
-    var currentRoles = await _userRoleRepository.GetAllAsync(ur => ur.UserId == userId, enableTracking: true);
+    var currentRoles = await _userRoleRepository.GetAllAsync(
+      filter: ur => ur.UserId == userId,
+      enableTracking: true,
+      cancellationToken: cancellationToken);
 
-    // Silinecekler
-    var toDelete = currentRoles.Where(ur => !roleIds.Contains(ur.RoleId)).ToList();
+    var currentRoleIds = currentRoles.Select(ur => ur.RoleId).ToHashSet();
+    var targetRoleIds = roleIds.ToHashSet();
 
+    var toDelete = currentRoles.Where(ur => !targetRoleIds.Contains(ur.RoleId)).ToList();
     foreach (var ur in toDelete)
     {
       _userRoleRepository.Delete(ur);
     }
 
-    // Eklenecekler
-    var toAdd = roleIds
-      .Where(id => !currentRoles.Any(ur => ur.RoleId == id))
-      .Select(id => new UserRole { UserId = userId, RoleId = id });
-
-    foreach (var ur in toAdd)
+    var idsToAdd = roleIds.Where(id => !currentRoleIds.Contains(id)).ToList();
+    foreach (var rId in idsToAdd)
     {
-      await _userRoleRepository.AddAsync(ur, cancellationToken);
+      await _userRoleRepository.AddAsync(new UserRole { UserId = userId, RoleId = rId }, cancellationToken);
     }
 
-    await _unitOfWork.SaveChangesAsync(cancellationToken);
+    if (toDelete.Any() || idsToAdd.Any())
+    {
+      await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
 
     return new ReturnModel<NoData>()
     {
       Success = true,
-      Message = "Kullanıcı rolleri senkronize edildi.",
+      Message = "Kullanıcı rolleri başarıyla senkronize edildi.",
       StatusCode = 200
     };
   }
 
   public async Task<ReturnModel<List<RoleResponseDto>>> GetRolesByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
   {
-    var userRoles = await _userRoleRepository.GetAllAsync(
-      filter: ur => ur.UserId == userId,
-      include: q => q.Include(ur => ur.Role),
-      cancellationToken: cancellationToken);
-
-    var roles = userRoles
-      .Where(ur => ur.Role != null)
-      .Select(ur => ur.Role!)
-      .ToList();
+    var roles = await _roleRepository.Query(enableTracking: false)
+      .Where(r => r.UserRoles.Any(ur => ur.UserId == userId))
+      .ToListAsync(cancellationToken);
 
     List<RoleResponseDto> response = _roleMapper.EntityToResponseDtoList(roles);
 
