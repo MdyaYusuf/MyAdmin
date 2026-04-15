@@ -28,7 +28,9 @@ public class AuthenticationService(
 {
   private readonly TokenOptions _options = _tokenOptions.Value;
 
-  public async Task<ReturnModel<TokenResponseDto>> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
+  public async Task<ReturnModel<TokenResponseDto>> LoginAsync(
+    LoginRequest request,
+    CancellationToken cancellationToken)
   {
     var validationResult = await _loginValidator.ValidateAsync(request, cancellationToken);
 
@@ -61,7 +63,9 @@ public class AuthenticationService(
     };
   }
 
-  public async Task<ReturnModel<CreatedUserResponseDto>> RegisterAsync(RegisterUserRequest request, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<CreatedUserResponseDto>> RegisterAsync(
+    RegisterUserRequest request,
+    CancellationToken cancellationToken = default)
   {
     var validationResult = await _registerValidator.ValidateAsync(request, cancellationToken);
 
@@ -106,7 +110,9 @@ public class AuthenticationService(
     };
   }
 
-  public async Task<ReturnModel<TokenResponseDto>> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
+  public async Task<ReturnModel<TokenResponseDto>> RefreshTokenAsync(
+    string refreshToken,
+    CancellationToken cancellationToken)
   {
     User? user = await _userRepository.GetAsync(
       predicate: u => u.RefreshToken == refreshToken,
@@ -137,7 +143,9 @@ public class AuthenticationService(
     };
   }
 
-  public async Task<ReturnModel<NoData>> RevokeRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken)
+  public async Task<ReturnModel<NoData>> RevokeRefreshTokenAsync(
+    string refreshToken,
+    CancellationToken cancellationToken)
   {
     User? user = await _userRepository.GetAsync(
       u => u.RefreshToken == refreshToken,
@@ -159,7 +167,9 @@ public class AuthenticationService(
     };
   }
 
-  private TokenResponseDto CreateToken(User user, string refreshToken)
+  private TokenResponseDto CreateToken(
+    User user,
+    string refreshToken)
   {
     var claims = new List<Claim>()
     {

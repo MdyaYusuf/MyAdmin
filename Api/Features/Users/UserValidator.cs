@@ -1,9 +1,23 @@
-﻿using FluentValidation;
+﻿using Api.Features.Authentication;
+using FluentValidation;
 
 namespace Api.Features.Users;
 
 public class RegisterUserRequestValidator : AbstractValidator<RegisterUserRequest>
 {
+  public class LoginRequestValidator : AbstractValidator<LoginRequest>
+  {
+    public LoginRequestValidator()
+    {
+      RuleFor(x => x.Email)
+        .NotEmpty().WithMessage("E-posta adresi boş olamaz.")
+        .EmailAddress().WithMessage("Geçerli bir e-posta adresi giriniz.");
+
+      RuleFor(x => x.Password)
+        .NotEmpty().WithMessage("Şifre boş olamaz.");
+    }
+  }
+
   public RegisterUserRequestValidator()
   {
     RuleFor(x => x.Username)

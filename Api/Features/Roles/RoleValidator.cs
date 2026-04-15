@@ -23,9 +23,6 @@ public class UpdateRoleRequestValidator : AbstractValidator<UpdateRoleRequest>
 {
   public UpdateRoleRequestValidator()
   {
-    RuleFor(x => x.Id)
-      .NotEmpty().WithMessage("Güncellenecek rolün ID bilgisi eksik.");
-
     RuleFor(x => x.Name)
       .NotEmpty().WithMessage("Rol adı boş olamaz.")
       .MinimumLength(2).WithMessage("Rol adı en az 2 karakter olmalıdır.")

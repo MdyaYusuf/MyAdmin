@@ -2,7 +2,7 @@
 
 public static class AuthenticationRegistration
 {
-    public static IServiceCollection AddAuthenticationFeatures(this IServiceCollection services)
+    public static IServiceCollection AddAuthenticationDependencies(this IServiceCollection services)
     {
       services.AddScoped<AuthenticationBusinessRules>();
       services.AddScoped<IAuthenticationService, AuthenticationService>();

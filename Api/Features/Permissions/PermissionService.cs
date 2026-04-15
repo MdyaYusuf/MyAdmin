@@ -71,10 +71,10 @@ public class PermissionService(
   }
 
   public async Task<ReturnModel<PermissionResponseDto>> GetAsync(
-      Expression<Func<Permission, bool>> predicate,
-      Func<IQueryable<Permission>, IQueryable<Permission>>? include = null,
-      bool enableTracking = false,
-      CancellationToken cancellationToken = default)
+    Expression<Func<Permission, bool>> predicate,
+    Func<IQueryable<Permission>, IQueryable<Permission>>? include = null,
+    bool enableTracking = false,
+    CancellationToken cancellationToken = default)
   {
     var permission = await _permissionRepository.GetAsync(
       predicate: predicate,
@@ -127,7 +127,9 @@ public class PermissionService(
     };
   }
 
-  public async Task<ReturnModel<NoData>> RemoveAsync(Guid id, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> RemoveAsync(
+    Guid id,
+    CancellationToken cancellationToken = default)
   {
     Permission permission = await _businessRules.GetPermissionIfExistAsync(id, enableTracking: true, cancellationToken: cancellationToken);
 
@@ -143,7 +145,10 @@ public class PermissionService(
     };
   }
 
-  public async Task<ReturnModel<NoData>> UpdateAsync(Guid id, UpdatePermissionRequest request, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> UpdateAsync(
+    Guid id,
+    UpdatePermissionRequest request,
+    CancellationToken cancellationToken = default)
   {
     var validationResult = await _updateValidator.ValidateAsync(request, cancellationToken);
 

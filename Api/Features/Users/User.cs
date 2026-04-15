@@ -1,5 +1,6 @@
 ﻿using Api.Core.Entities;
-using Api.Features.Roles;
+using Api.Features.Activities;
+using Api.Features.Notifications;
 using Api.Features.UserRoles;
 using System.Diagnostics.CodeAnalysis;
 
@@ -11,6 +12,8 @@ public class User : Entity<Guid>
   public User()
   {
     UserRoles = new HashSet<UserRole>();
+    Notifications = new HashSet<Notification>();
+    Activities = new HashSet<Activity>();
 
     Username = default!;
     Email = default!;
@@ -30,4 +33,6 @@ public class User : Entity<Guid>
 
   // Navigation properties
   public virtual ICollection<UserRole> UserRoles { get; set; }
+  public virtual ICollection<Notification> Notifications { get; set; }
+  public virtual ICollection<Activity> Activities { get; set; }
 }

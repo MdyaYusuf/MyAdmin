@@ -12,7 +12,10 @@ public class RolePermissionService(
   PermissionMapper _mapper,
   IUnitOfWork _unitOfWork) : IRolePermissionService
 {
-  public async Task<ReturnModel<NoData>> AssignPermissionToRoleAsync(Guid roleId, Guid permissionId, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> AssignPermissionToRoleAsync(
+    Guid roleId,
+    Guid permissionId,
+    CancellationToken cancellationToken = default)
   {
     await _businessRules.RolePermissionRelationMustNotBeDuplicateAsync(roleId, permissionId, cancellationToken);
 
@@ -32,11 +35,14 @@ public class RolePermissionService(
     };
   }
 
-  public async Task<ReturnModel<List<PermissionResponseDto>>> GetPermissionsByRoleIdAsync(Guid roleId, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<List<PermissionResponseDto>>> GetPermissionsByRoleIdAsync(
+    Guid roleId,
+    CancellationToken cancellationToken = default)
   {
-    var permissions = await _permissionRepository.Query(enableTracking: false)
-     .Where(p => p.RolePermissions.Any(rp => rp.RoleId == roleId))
-     .ToListAsync(cancellationToken);
+    var permissions = await _permissionRepository
+      .Query(enableTracking: false)
+      .Where(p => p.RolePermissions.Any(rp => rp.RoleId == roleId))
+      .ToListAsync(cancellationToken);
 
     List<PermissionResponseDto> response = _mapper.EntityToResponseDtoList(permissions);
 
@@ -49,7 +55,10 @@ public class RolePermissionService(
     };
   }
 
-  public async Task<ReturnModel<NoData>> RevokePermissionFromRoleAsync(Guid roleId, Guid permissionId, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> RevokePermissionFromRoleAsync(
+    Guid roleId,
+    Guid permissionId,
+    CancellationToken cancellationToken = default)
   {
     var rolePermission = await _rolePermissionRepository.GetAsync(
       predicate: rp => rp.RoleId == roleId && rp.PermissionId == permissionId,
@@ -76,7 +85,10 @@ public class RolePermissionService(
     };
   }
 
-  public async Task<ReturnModel<NoData>> SyncRolePermissionsAsync(Guid roleId, List<Guid> permissionIds, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> SyncRolePermissionsAsync(
+    Guid roleId,
+    List<Guid> permissionIds,
+    CancellationToken cancellationToken = default)
   {
     var currentRolePermissions = await _rolePermissionRepository.GetAllAsync(
       filter: rp => rp.RoleId == roleId,
@@ -96,7 +108,7 @@ public class RolePermissionService(
     }
 
     var idsToAdd = permissionIds
-      .Where(permissionId => !currentPermissionIds.Contains(permissionId))
+      .Where(pId => !currentPermissionIds.Contains(pId))
       .ToList();
 
     foreach (var pId in idsToAdd)

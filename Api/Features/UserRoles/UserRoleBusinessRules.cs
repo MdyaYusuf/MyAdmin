@@ -4,19 +4,24 @@ namespace Api.Features.UserRoles;
 
 public class UserRoleBusinessRules(IUserRoleRepository _userRoleRepository)
 {
-  public async Task<UserRole> GetUserRoleIfExistAsync(Guid id, CancellationToken cancellationToken = default)
+  public async Task<UserRole> GetUserRoleIfExistAsync(
+    Guid id,
+    CancellationToken cancellationToken = default)
   {
-    var ur = await _userRoleRepository.GetByIdAsync(id, cancellationToken: cancellationToken);
+    var userRole = await _userRoleRepository.GetByIdAsync(id, cancellationToken: cancellationToken);
 
-    if (ur == null)
+    if (userRole == null)
     {
       throw new NotFoundException("Kullanıcı, rol ilişkisi bulunamadı.");
     }
 
-    return ur;
+    return userRole;
   }
 
-  public async Task UserRoleRelationMustNotBeDuplicateAsync(Guid userId, Guid roleId, CancellationToken cancellationToken = default)
+  public async Task UserRoleRelationMustNotBeDuplicateAsync(
+    Guid userId,
+    Guid roleId,
+    CancellationToken cancellationToken = default)
   {
     var exists = await _userRoleRepository.AnyAsync(ur => ur.UserId == userId && ur.RoleId == roleId, cancellationToken);
 

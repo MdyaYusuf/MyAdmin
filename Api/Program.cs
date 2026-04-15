@@ -14,6 +14,9 @@ using Api.Features.Permissions;
 using Api.Features.Roles;
 using Api.Features.RolePermissions;
 using Api.Features.UserRoles;
+using Api.Features.Authentication;
+using Api.Features.Notifications;
+using Api.Features.Activities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +40,9 @@ builder.Services.AddRoleDependencies();
 builder.Services.AddPermissionDependencies();
 builder.Services.AddUserRoleDependencies();
 builder.Services.AddRolePermissionDependencies();
+builder.Services.AddAuthenticationDependencies();
+builder.Services.AddActivityDependencies();
+builder.Services.AddNotificationDependencies();
 
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 

@@ -172,7 +172,10 @@ public class UserService(
     };
   }
 
-  public async Task<ReturnModel<NoData>> ChangePasswordAsync(ChangePasswordRequest request, Guid userId, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> ChangePasswordAsync(
+    ChangePasswordRequest request,
+    Guid userId,
+    CancellationToken cancellationToken = default)
   {
     var validationResult = await _changePasswordValidator.ValidateAsync(request, cancellationToken);
 

@@ -14,7 +14,9 @@ public class RoleService(
   IValidator<CreateRoleRequest> _createValidator,
   IValidator<UpdateRoleRequest> _updateValidator) : IRoleService
 {
-  public async Task<ReturnModel<RoleResponseDto>> AddAsync(CreateRoleRequest request, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<RoleResponseDto>> AddAsync(
+    CreateRoleRequest request,
+    CancellationToken cancellationToken = default)
   {
     var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
 
@@ -120,7 +122,9 @@ public class RoleService(
     };
   }
 
-  public async Task<ReturnModel<NoData>> RemoveAsync(Guid id, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> RemoveAsync(
+    Guid id,
+    CancellationToken cancellationToken = default)
   {
     Role role = await _businessRules.GetRoleIfExistAsync(id, enableTracking: true, cancellationToken: cancellationToken);
 
@@ -136,7 +140,10 @@ public class RoleService(
     };
   }
 
-  public async Task<ReturnModel<NoData>> UpdateAsync(Guid id, UpdateRoleRequest request, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> UpdateAsync(
+    Guid id,
+    UpdateRoleRequest request,
+    CancellationToken cancellationToken = default)
   {
     var validationResult = await _updateValidator.ValidateAsync(request, cancellationToken);
 
