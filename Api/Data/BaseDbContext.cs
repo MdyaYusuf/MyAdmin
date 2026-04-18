@@ -1,4 +1,6 @@
-﻿using Api.Features.Permissions;
+﻿using Api.Features.Activities;
+using Api.Features.Notifications;
+using Api.Features.Permissions;
 using Api.Features.RolePermissions;
 using Api.Features.Roles;
 using Api.Features.UserRoles;
@@ -20,6 +22,8 @@ public class BaseDbContext : DbContext
   public DbSet<Permission> Permissions { get; set; }
   public DbSet<UserRole> UserRoles { get; set; }
   public DbSet<RolePermission> RolePermissions { get; set; }
+  public DbSet<Notification> Notifications { get; set; }
+  public DbSet<Activity> Activities { get; set; }
 
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)

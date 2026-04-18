@@ -24,8 +24,8 @@ public class NotificationsController(INotificationService _notificationService) 
     var currentUserId = GetUserId();
 
     var result = await _notificationService.GetAllAsync(
-        filter: n => n.UserId == currentUserId,
-        cancellationToken: cancellationToken);
+      filter: n => n.UserId == currentUserId,
+      cancellationToken: cancellationToken);
 
     return CreateActionResult(result);
   }
@@ -35,6 +35,7 @@ public class NotificationsController(INotificationService _notificationService) 
   public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
   {
     var currentUserId = GetUserId();
+
     var result = await _notificationService.GetByIdAsync(id, currentUserId, cancellationToken);
 
     return CreateActionResult(result);
@@ -45,6 +46,7 @@ public class NotificationsController(INotificationService _notificationService) 
   public async Task<IActionResult> GetUnreadCount(CancellationToken cancellationToken)
   {
     var currentUserId = GetUserId();
+
     var result = await _notificationService.GetUnreadCountAsync(currentUserId, cancellationToken);
 
     return CreateActionResult(result);
@@ -64,6 +66,7 @@ public class NotificationsController(INotificationService _notificationService) 
   public async Task<IActionResult> MarkAsRead(Guid id, CancellationToken cancellationToken)
   {
     var currentUserId = GetUserId();
+
     var result = await _notificationService.MarkAsReadAsync(id, currentUserId, cancellationToken);
 
     return CreateActionResult(result);
@@ -74,6 +77,7 @@ public class NotificationsController(INotificationService _notificationService) 
   public async Task<IActionResult> MarkAllAsRead(CancellationToken cancellationToken)
   {
     var currentUserId = GetUserId();
+
     var result = await _notificationService.MarkAllAsReadAsync(currentUserId, cancellationToken);
 
     return CreateActionResult(result);
@@ -84,6 +88,7 @@ public class NotificationsController(INotificationService _notificationService) 
   public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
   {
     var currentUserId = GetUserId();
+
     var result = await _notificationService.RemoveAsync(id, currentUserId, cancellationToken);
 
     return CreateActionResult(result);

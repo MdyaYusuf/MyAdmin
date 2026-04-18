@@ -1,11 +1,11 @@
 ﻿namespace Api.Features.Notifications;
 
 public sealed record CreateNotificationRequest(
-    string Title,
-    string Message,
-    Guid UserId,
-    string Type = "INFO",
-    string? LinkUrl = null);
+  string Title,
+  string Message,
+  Guid UserId,
+  string Type = "INFO",
+  string? LinkUrl = null);
 
 public class UpdateNotificationRequest
 {
@@ -27,13 +27,13 @@ public class NotificationResponseDto
 }
 
 public sealed record CreatedNotificationResponseDto(
-    Guid Id,
-    string Title,
-    Guid UserId);
+  Guid Id,
+  string Title,
+  Guid UserId);
 
 public sealed record NotificationPreviewDto(
-    Guid Id,
-    string Title,
-    string Type,
-    bool IsRead,
-    DateTime CreatedDate);
+  Guid Id,
+  string Title,
+  string Type,
+  bool IsRead,
+  DateTime CreatedDate);

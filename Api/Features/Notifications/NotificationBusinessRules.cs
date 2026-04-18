@@ -5,14 +5,20 @@ namespace Api.Features.Notifications;
 
 public class NotificationBusinessRules(INotificationRepository _notificationRepository)
 {
-  public async Task<Notification> GetNotificationAndCheckOwnershipAsync(Guid id, Guid userId, bool enableTracking = false)
+  public async Task<Notification> GetNotificationAndCheckOwnershipAsync(
+    Guid id,
+    Guid userId,
+    bool enableTracking = false)
   {
     var notification = await GetNotificationIfExistAsync(id, enableTracking);
     NotificationMustBelongToUser(notification, userId);
+
     return notification;
   }
 
-  public async Task<Notification> GetNotificationIfExistAsync(Guid id, bool enableTracking = false)
+  public async Task<Notification> GetNotificationIfExistAsync(
+    Guid id,
+    bool enableTracking = false)
   {
     var notification = await _notificationRepository.GetByIdAsync(id, enableTracking: enableTracking);
 
@@ -24,7 +30,9 @@ public class NotificationBusinessRules(INotificationRepository _notificationRepo
     return notification;
   }
 
-  public void NotificationMustBelongToUser(Notification notification, Guid userId)
+  public void NotificationMustBelongToUser(
+    Notification notification,
+    Guid userId)
   {
     if (notification.UserId != userId)
     {

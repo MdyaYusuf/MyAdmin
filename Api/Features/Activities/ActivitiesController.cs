@@ -18,7 +18,9 @@ public class ActivitiesController(IActivityService _activityService) : CustomBas
   }
 
   [HttpGet("{id:guid}")]
-  public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
+  public async Task<IActionResult> GetById(
+    Guid id,
+    CancellationToken cancellationToken)
   {
     var result = await _activityService.GetByIdAsync(id, cancellationToken);
 
@@ -26,17 +28,21 @@ public class ActivitiesController(IActivityService _activityService) : CustomBas
   }
 
   [HttpGet("get-by-entity/{entityName}")]
-  public async Task<IActionResult> GetByEntity(string entityName, CancellationToken cancellationToken)
+  public async Task<IActionResult> GetByEntity(
+    string entityName,
+    CancellationToken cancellationToken)
   {
     var result = await _activityService.GetAllAsync(
-        filter: a => a.EntityName.ToLower() == entityName.ToLower(),
-        cancellationToken: cancellationToken);
+      filter: a => a.EntityName.ToLower() == entityName.ToLower(),
+      cancellationToken: cancellationToken);
 
     return CreateActionResult(result);
   }
 
   [HttpPost]
-  public async Task<IActionResult> Add([FromBody] CreateActivityRequest request, CancellationToken cancellationToken)
+  public async Task<IActionResult> Add(
+    [FromBody] CreateActivityRequest request,
+    CancellationToken cancellationToken)
   {
     var result = await _activityService.AddAsync(request, cancellationToken);
 
@@ -44,7 +50,9 @@ public class ActivitiesController(IActivityService _activityService) : CustomBas
   }
 
   [HttpDelete("{id:guid}")]
-  public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+  public async Task<IActionResult> Delete(
+    Guid id,
+    CancellationToken cancellationToken)
   {
     var result = await _activityService.RemoveAsync(id, cancellationToken);
 

@@ -66,6 +66,7 @@ public class RolePermissionService(
       cancellationToken: cancellationToken);
 
     if (rolePermission == null) {
+
       return new ReturnModel<NoData>
       {
         Success = false,

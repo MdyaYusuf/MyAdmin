@@ -81,5 +81,4 @@ public class UserBusinessRules(IUserRepository _userRepository)
       throw new BusinessException("Yeni şifreniz eski şifrenizle aynı olamaz.");
     }
   }
-
 }

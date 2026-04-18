@@ -1,5 +1,4 @@
 ﻿using Api.Core.Exceptions;
-using Api.Features.Activities;
 
 namespace Api.Features.Activities;
 
@@ -13,6 +12,7 @@ public class ActivityBusinessRules(IActivityRepository _activityRepository)
     {
       throw new NotFoundException("Aktivite kaydı bulunamadı.");
     }
+
     return activity;
   }
 

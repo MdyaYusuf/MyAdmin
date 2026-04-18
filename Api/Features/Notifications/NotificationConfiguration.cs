@@ -19,11 +19,14 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
       .IsRequired(false);
 
     builder.Property(n => n.Title).HasMaxLength(200).IsRequired();
+
     builder.Property(n => n.Message).HasMaxLength(500).IsRequired();
+
     builder.Property(n => n.Type)
       .HasMaxLength(50)
       .IsRequired()
       .HasDefaultValue("INFO");
+
     builder.Property(n => n.LinkUrl).HasMaxLength(250).IsRequired(false);
 
     builder.HasOne(n => n.User)

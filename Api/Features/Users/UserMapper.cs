@@ -13,8 +13,10 @@ public partial class UserMapper
   [MapperIgnoreTarget(nameof(User.PasswordHash))]
   [MapperIgnoreTarget(nameof(User.PasswordKey))]
   public partial User RegisterToEntity(RegisterUserRequest request);
+
   [MapperIgnoreTarget(nameof(User.ProfileImageUrl))]
   public partial void UpdateEntityFromRequest(UpdateUserRequest request, User entity);
+
   [MapProperty(nameof(User.UserRoles), nameof(UserResponseDto.Roles))]
   public partial UserResponseDto EntityToResponseDto(User entity);
   private List<RoleResponseDto> MapUserRolesToRoles(ICollection<UserRole> userRoles)

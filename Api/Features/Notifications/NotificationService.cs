@@ -14,7 +14,9 @@ public class NotificationService(
   IValidator<CreateNotificationRequest> _createValidator,
   IValidator<UpdateNotificationRequest> _updateValidator) : INotificationService
 {
-  public async Task<ReturnModel<CreatedNotificationResponseDto>> AddAsync(CreateNotificationRequest request, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<CreatedNotificationResponseDto>> AddAsync(
+    CreateNotificationRequest request,
+    CancellationToken cancellationToken = default)
   {
     var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
 
@@ -102,7 +104,10 @@ public class NotificationService(
     };
   }
 
-  public async Task<ReturnModel<NotificationResponseDto>> GetByIdAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NotificationResponseDto>> GetByIdAsync(
+    Guid id,
+    Guid userId,
+    CancellationToken cancellationToken = default)
   {
     Notification notification = await _businessRules.GetNotificationAndCheckOwnershipAsync(id, userId);
 
@@ -117,7 +122,11 @@ public class NotificationService(
     };
   }
 
-  public async Task<ReturnModel<NoData>> UpdateAsync(Guid id, UpdateNotificationRequest request, Guid userId, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> UpdateAsync(
+    Guid id,
+    UpdateNotificationRequest request,
+    Guid userId,
+    CancellationToken cancellationToken = default)
   {
     var validationResult = await _updateValidator.ValidateAsync(request, cancellationToken);
 
@@ -141,7 +150,10 @@ public class NotificationService(
     };
   }
 
-  public async Task<ReturnModel<NoData>> RemoveAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> RemoveAsync(
+    Guid id,
+    Guid userId,
+    CancellationToken cancellationToken = default)
   {
     Notification notification = await _businessRules.GetNotificationAndCheckOwnershipAsync(id, userId, enableTracking: true);
 
@@ -156,7 +168,10 @@ public class NotificationService(
     };
   }
 
-  public async Task<ReturnModel<NoData>> MarkAsReadAsync(Guid id, Guid userId, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> MarkAsReadAsync(
+    Guid id,
+    Guid userId,
+    CancellationToken cancellationToken = default)
   {
     Notification notification = await _businessRules.GetNotificationAndCheckOwnershipAsync(id, userId, enableTracking: true);
 
@@ -175,7 +190,9 @@ public class NotificationService(
     };
   }
 
-  public async Task<ReturnModel<NoData>> MarkAllAsReadAsync(Guid userId, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<NoData>> MarkAllAsReadAsync(
+    Guid userId,
+    CancellationToken cancellationToken = default)
   {
     await _businessRules.AtLeastOneUnreadNotificationMustExistAsync(userId);
 
@@ -200,9 +217,12 @@ public class NotificationService(
     };
   }
 
-  public async Task<ReturnModel<int>> GetUnreadCountAsync(Guid userId, CancellationToken cancellationToken = default)
+  public async Task<ReturnModel<int>> GetUnreadCountAsync(
+    Guid userId,
+    CancellationToken cancellationToken = default)
   {
-    var count = await _notificationRepository.Query(enableTracking: false)
+    var count = await _notificationRepository
+      .Query(enableTracking: false)
       .CountAsync(n => n.UserId == userId && !n.IsRead, cancellationToken);
 
     return new ReturnModel<int>()

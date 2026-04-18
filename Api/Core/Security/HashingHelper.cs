@@ -8,6 +8,7 @@ public static class HashingHelper
   public static void CreatePasswordHash(string password, out string passwordHash, out string passwordKey)
   {
     using var hmac = new HMACSHA512();
+
     passwordKey = Convert.ToBase64String(hmac.Key);
     passwordHash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(password)));
   }
@@ -15,6 +16,7 @@ public static class HashingHelper
   public static bool VerifyPasswordHash(string password, string passwordHash, string passwordKey)
   {
     using var hmac = new HMACSHA512(Convert.FromBase64String(passwordKey));
+
     var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
 
     return Convert.ToBase64String(computedHash) == passwordHash;

@@ -8,13 +8,17 @@ public class RolePermissionConfiguration : IEntityTypeConfiguration<RolePermissi
   public void Configure(EntityTypeBuilder<RolePermission> builder)
   {
     builder.ToTable("RolePermissions");
+
     builder.HasKey(rp => rp.Id);
 
     builder.Property(rp => rp.Id).HasColumnName("Id").IsRequired();
+
     builder.Property(rp => rp.CreatedDate).HasColumnName("CreatedDate").IsRequired();
+
     builder.Property(rp => rp.UpdatedDate).HasColumnName("UpdatedDate").IsRequired(false);
 
     builder.Property(rp => rp.RoleId).IsRequired();
+
     builder.Property(rp => rp.PermissionId).IsRequired();
 
     builder.HasIndex(rp => new { rp.RoleId, rp.PermissionId }).IsUnique();

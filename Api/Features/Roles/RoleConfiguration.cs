@@ -12,7 +12,9 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
     builder.HasKey(r => r.Id);
 
     builder.Property(r => r.Id).HasColumnName("Id").IsRequired();
+
     builder.Property(r => r.CreatedDate).HasColumnName("CreatedDate").IsRequired();
+
     builder.Property(r => r.UpdatedDate).HasColumnName("UpdatedDate").IsRequired(false);
 
     builder.Property(r => r.Name)

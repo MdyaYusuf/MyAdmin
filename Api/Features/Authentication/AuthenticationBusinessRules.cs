@@ -6,7 +6,9 @@ namespace Api.Features.Authentication;
 
 public class AuthenticationBusinessRules
 {
-  public void UserCredentialsMustMatch(User? user, string password)
+  public void UserCredentialsMustMatch(
+    User? user,
+    string password)
   {
     if (user == null || !HashingHelper.VerifyPasswordHash(password, user.PasswordHash, user.PasswordKey))
     {
@@ -14,7 +16,9 @@ public class AuthenticationBusinessRules
     }
   }
 
-  public void RefreshTokenMustBeValid(User? user, string providedRefreshToken)
+  public void RefreshTokenMustBeValid(
+    User? user,
+    string providedRefreshToken)
   {
     
     if (user == null)
@@ -41,7 +45,9 @@ public class AuthenticationBusinessRules
     }
   }
 
-  public void UserMustHavePermission(List<string> userPermissions, string requiredPermission)
+  public void UserMustHavePermission(
+    List<string> userPermissions,
+    string requiredPermission)
   {
     if (!userPermissions.Contains(requiredPermission))
     {

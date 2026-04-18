@@ -147,7 +147,6 @@ public class UserService(
 
     if (existingUser.Username != request.Username)
     {
-      
       await _businessRules.UsernameMustBeUniqueAsync(request.Username, existingUser.Id, cancellationToken);
     }
 

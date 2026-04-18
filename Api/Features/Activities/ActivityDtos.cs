@@ -1,15 +1,14 @@
 ﻿namespace Api.Features.Activities;
 
 public sealed record CreateActivityRequest(
-    string Action,           
-    string EntityName,       
-    string? EntityId = null, 
-    string? OldValues = null, 
-    string? NewValues = null, 
-    string? IPAddress = null,
-    bool IsSuccess = true,
-    Guid? UserId = null     
-);
+  string Action,           
+  string EntityName,       
+  string? EntityId = null, 
+  string? OldValues = null, 
+  string? NewValues = null, 
+  string? IPAddress = null,
+  bool IsSuccess = true,
+  Guid? UserId = null);
 
 public class ActivityResponseDto
 {
@@ -27,8 +26,8 @@ public class ActivityResponseDto
 }
 
 public sealed record ActivityPreviewDto(
-    Guid Id,
-    string Action,
-    string EntityName,
-    bool IsSuccess,
-    DateTime CreatedDate);
+  Guid Id,
+  string Action,
+  string EntityName,
+  bool IsSuccess,
+  DateTime CreatedDate);
