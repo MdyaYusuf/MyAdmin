@@ -24,7 +24,8 @@ public class AuthenticationService(
   IUnitOfWork _unitOfWork,
   IValidator<RegisterUserRequest> _registerValidator,
   IValidator<LoginRequest> _loginValidator,
-  IOptions<TokenOptions> _tokenOptions) : IAuthenticationService
+  IOptions<TokenOptions> _tokenOptions,
+  ILogger<AuthenticationService> _logger) : IAuthenticationService
 {
   private readonly TokenOptions _options = _tokenOptions.Value;
 
@@ -32,10 +33,14 @@ public class AuthenticationService(
     LoginRequest request,
     CancellationToken cancellationToken)
   {
+    _logger.LogInformation("Giriş denemesi başlatıldı. E-posta: {Email}", request.Email);
+
     var validationResult = await _loginValidator.ValidateAsync(request, cancellationToken);
 
     if (!validationResult.IsValid)
     {
+      _logger.LogWarning("Giriş doğrulaması başarısız oldu: {Email}", request.Email);
+
       throw new ValidationException(validationResult.Errors);
     }
 
@@ -52,6 +57,8 @@ public class AuthenticationService(
     _userRepository.Update(user);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+    _logger.LogInformation("Kullanıcı başarıyla giriş yaptı. ID: {UserId}", user.Id);
+
     TokenResponseDto tokenResponse = CreateToken(user!, user.RefreshToken);
 
     return new ReturnModel<TokenResponseDto>()
@@ -67,10 +74,14 @@ public class AuthenticationService(
     RegisterUserRequest request,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Yeni kullanıcı kaydı oluşturuluyor: {Username}", request.Username);
+
     var validationResult = await _registerValidator.ValidateAsync(request, cancellationToken);
 
     if (!validationResult.IsValid)
     {
+      _logger.LogWarning("Kayıt validasyon hatası: {Username} ({Email})", request.Username, request.Email);
+
       throw new ValidationException(validationResult.Errors);
     }
 
@@ -99,6 +110,8 @@ public class AuthenticationService(
     await _userRepository.AddAsync(createdUser, cancellationToken);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+    _logger.LogInformation("Kullanıcı kaydı başarıyla tamamlandı. Yeni ID: {UserId}", createdUser.Id);
+
     CreatedUserResponseDto response = _mapper.EntityToCreatedResponseDto(createdUser);
 
     return new ReturnModel<CreatedUserResponseDto>()
@@ -114,6 +127,8 @@ public class AuthenticationService(
     string refreshToken,
     CancellationToken cancellationToken)
   {
+    _logger.LogInformation("Oturum tazeleme işlemi(Refresh Token) başlatıldı.");
+
     User? user = await _userRepository.GetAsync(
       predicate: u => u.RefreshToken == refreshToken,
       include: query => query.Include(u => u.UserRoles).ThenInclude(ur => ur.Role),
@@ -125,6 +140,8 @@ public class AuthenticationService(
 
     if (user!.RefreshTokenExpiration <= DateTime.UtcNow.AddDays(1))
     {
+      _logger.LogInformation("Refresh token süresi dolmak üzere olduğu için yeni bir token üretiliyor. Kullanıcı: {UserId}", user.Id);
+
       currentRefreshToken = GenerateRefreshToken();
       user.RefreshToken = currentRefreshToken;
       user.RefreshTokenExpiration = DateTime.UtcNow.AddDays(_options.RefreshTokenExpiration);
@@ -133,6 +150,8 @@ public class AuthenticationService(
     await _unitOfWork.SaveChangesAsync(cancellationToken);
 
     TokenResponseDto tokenResponse = CreateToken(user!, currentRefreshToken);
+
+    _logger.LogInformation("Oturum başarıyla tazelendi. Kullanıcı ID: {UserId}", user.Id);
 
     return new ReturnModel<TokenResponseDto>()
     {
@@ -147,6 +166,8 @@ public class AuthenticationService(
     string refreshToken,
     CancellationToken cancellationToken)
   {
+    _logger.LogInformation("Oturum kapatma isteği alındı.");
+
     User? user = await _userRepository.GetAsync(
       u => u.RefreshToken == refreshToken,
       cancellationToken: cancellationToken);
@@ -158,6 +179,8 @@ public class AuthenticationService(
 
     _userRepository.Update(user);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Oturum başarıyla sonlandırıldı. Kullanıcı: {UserId}", user.Id);
 
     return new ReturnModel<NoData>()
     {

@@ -4,6 +4,7 @@ using Api.Core.Responses;
 using Api.Core.Security;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 
 namespace Api.Features.Users;
@@ -14,7 +15,8 @@ public class UserService(
   UserBusinessRules _businessRules,
   IUnitOfWork _unitOfWork,
   IValidator<UpdateUserRequest> _updateValidator,
-  IValidator<ChangePasswordRequest> _changePasswordValidator) : IUserService
+  IValidator<ChangePasswordRequest> _changePasswordValidator,
+  ILogger<UserService> _logger) : IUserService
 {
   public async Task<ReturnModel<List<UserResponseDto>>> GetAllAsync(
     Expression<Func<User, bool>>? filter = null, 
@@ -24,6 +26,8 @@ public class UserService(
     bool withDeleted = false, 
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Tüm kullanıcılar listeleniyor.");
+
     List<User> users = await _userRepository.GetAllAsync(
       include: u => u.Include(u => u.UserRoles).ThenInclude(ur => ur.Role),
       cancellationToken: cancellationToken);
@@ -45,6 +49,8 @@ public class UserService(
     bool enableTracking = false, 
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Kriterlere göre kullanıcı sorgulanıyor.");
+
     var user = await _userRepository.GetAsync(
       predicate: predicate,
       include: u => u.Include(u => u.UserRoles).ThenInclude(ur => ur.Role),
@@ -53,6 +59,8 @@ public class UserService(
 
     if (user == null)
     {
+      _logger.LogWarning("Aranan kriterlere uygun kullanıcı bulunamadı.");
+
       return new ReturnModel<UserResponseDto>()
       {
         Success = false,
@@ -77,6 +85,8 @@ public class UserService(
     bool enableTracking = false, 
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Kullanıcı detayları getiriliyor. ID: {UserId}", id);
+
     User user = await _businessRules.GetUserIfExistAsync(
       id: id,
       include: u => u.Include(u => u.UserRoles).ThenInclude(ur => ur.Role),
@@ -100,6 +110,8 @@ public class UserService(
     string userRole,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Kullanıcı silme işlemi başlatıldı. Silinecek ID: {TargetUserId}, İşlemi Yapan: {CurrentUserId}", id, currentUserId);
+
     _businessRules.UserMustBeOwnerOrAdmin(id, currentUserId, userRole);
 
     User user = await _businessRules.GetUserIfExistAsync(
@@ -112,7 +124,13 @@ public class UserService(
     _userRepository.Delete(user);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-    FileHelper.DeleteImageFromDisk(imagePathToDelete);
+    if (!string.IsNullOrEmpty(imagePathToDelete))
+    {
+      _logger.LogInformation("Kullanıcı silindiği için profil fotoğrafı temizleniyor. Dosya: {ImagePath}", imagePathToDelete);
+      FileHelper.DeleteImageFromDisk(imagePathToDelete);
+    }
+
+    _logger.LogInformation("Kullanıcı başarıyla silindi. ID: {UserId}", id);
 
     return new ReturnModel<NoData>()
     {
@@ -128,10 +146,14 @@ public class UserService(
     Guid currentUserId,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Kullanıcı güncelleme işlemi başlatıldı. ID: {UserId}", currentUserId);
+
     var validationResult = await _updateValidator.ValidateAsync(request, cancellationToken);
 
     if (!validationResult.IsValid)
     {
+      _logger.LogWarning("Kullanıcı güncelleme validasyonu başarısız oldu. ID: {UserId}", currentUserId);
+
       throw new ValidationException(validationResult.Errors);
     }
 
@@ -152,6 +174,11 @@ public class UserService(
 
     _mapper.UpdateEntityFromRequest(request, existingUser);
 
+    if (request.ImageFile != null)
+    {
+      _logger.LogInformation("Kullanıcı profil fotoğrafı güncelleniyor. ID: {UserId}", currentUserId);
+    }
+
     existingUser.ProfileImageUrl = await FileHelper.ReplaceImageOnDisk(
       request.ImageFile,
       existingUser.ProfileImageUrl,
@@ -161,6 +188,8 @@ public class UserService(
 
     _userRepository.Update(existingUser);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Kullanıcı bilgileri başarıyla güncellendi. ID: {UserId}", currentUserId);
 
     return new ReturnModel<NoData>()
     {
@@ -176,10 +205,14 @@ public class UserService(
     Guid userId,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Şifre değiştirme işlemi başlatıldı. ID: {UserId}", userId);
+
     var validationResult = await _changePasswordValidator.ValidateAsync(request, cancellationToken);
 
     if (!validationResult.IsValid)
     {
+      _logger.LogWarning("Şifre değiştirme validasyonu başarısız oldu. ID: {UserId}", userId);
+
       throw new ValidationException(validationResult.Errors);
     }
 
@@ -193,6 +226,8 @@ public class UserService(
 
     _userRepository.Update(user);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Kullanıcı şifresi başarıyla güncellendi. ID: {UserId}", userId);
 
     return new ReturnModel<NoData>()
     {

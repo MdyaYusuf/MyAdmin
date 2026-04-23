@@ -1,8 +1,11 @@
 ﻿using Api.Core.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace Api.Features.RolePermissions;
 
-public class RolePermissionBusinessRules(IRolePermissionRepository _rolePermissionRepository)
+public class RolePermissionBusinessRules(
+  IRolePermissionRepository _rolePermissionRepository,
+  ILogger<RolePermissionBusinessRules> _logger)
 {
   public async Task<RolePermission> GetRolePermissionIfExistAsync(
     Guid id,
@@ -12,6 +15,8 @@ public class RolePermissionBusinessRules(IRolePermissionRepository _rolePermissi
 
     if (rolePermission == null)
     {
+      _logger.LogWarning("Rol-İzin ilişkisi bulunamadı. Aranan ID: {RolePermissionId}", id);
+
       throw new NotFoundException("Rol-İzin ilişkisi bulunamadı.");
     } 
 
@@ -27,6 +32,9 @@ public class RolePermissionBusinessRules(IRolePermissionRepository _rolePermissi
 
     if (exists)
     {
+      _logger.LogWarning("Mevcut ilişki hatası: Bu rol zaten bu izne sahip. Rol ID: {RoleId}, Yetki ID: {PermissionId}",
+          roleId, permissionId);
+
       throw new BusinessException("Bu rol zaten bu izne sahip.");
     }
   }

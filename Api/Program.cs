@@ -2,23 +2,37 @@
 using Api.Core.Middlewares;
 using Api.Core.Security;
 using Api.Data;
+using Api.Features.Activities;
+using Api.Features.Authentication;
+using Api.Features.Notifications;
+using Api.Features.Permissions;
+using Api.Features.RolePermissions;
+using Api.Features.Roles;
+using Api.Features.UserRoles;
+using Api.Features.Users;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
+using Serilog.Events;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
-using Api.Features.Users;
-using Api.Features.Permissions;
-using Api.Features.Roles;
-using Api.Features.RolePermissions;
-using Api.Features.UserRoles;
-using Api.Features.Authentication;
-using Api.Features.Notifications;
-using Api.Features.Activities;
+
+Log.Logger = new LoggerConfiguration()
+  .MinimumLevel.Information()
+  .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
+  .MinimumLevel.Override("System", LogEventLevel.Error)
+  .WriteTo.Console()
+  .WriteTo.File("Logs/log-.txt",
+    rollingInterval: RollingInterval.Day,
+    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}") // Format düzenleme
+  .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

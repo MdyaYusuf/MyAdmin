@@ -3,7 +3,9 @@ using Api.Core.Security;
 
 namespace Api.Features.Users;
 
-public class UserBusinessRules(IUserRepository _userRepository)
+public class UserBusinessRules(
+  IUserRepository _userRepository,
+  ILogger<UserBusinessRules> _logger)
 {
   public async Task<User> GetUserIfExistAsync(
     Guid id,
@@ -15,6 +17,8 @@ public class UserBusinessRules(IUserRepository _userRepository)
 
     if (user == null)
     {
+      _logger.LogWarning("Kullanıcı bulunamadı. Aranan ID: {UserId}", id);
+
       throw new NotFoundException($"{id} numaralı kullanıcı bulunamadı.");
     }
 
@@ -27,6 +31,8 @@ public class UserBusinessRules(IUserRepository _userRepository)
 
     if (!exists)
     {
+      _logger.LogWarning("Kullanıcı varlık kontrolü başarısız. ID: {UserId}", userId);
+
       throw new NotFoundException($"{userId} numaralı kullanıcı bulunamadı.");
     }
   }
@@ -37,6 +43,8 @@ public class UserBusinessRules(IUserRepository _userRepository)
 
     if (exists)
     {
+      _logger.LogWarning("E-posta adresi zaten kullanımda: {Email}, Kullanıcı ID: {UserId}", email, id ?? Guid.Empty);
+
       throw new BusinessException("Bu eposta adresi zaten kullanımda.");
     }
   }
@@ -47,6 +55,8 @@ public class UserBusinessRules(IUserRepository _userRepository)
 
     if (exists)
     {
+      _logger.LogWarning("Kullanıcı adı zaten alınmış: {Username}, Kullanıcı ID: {UserId}", username, id ?? Guid.Empty);
+
       throw new BusinessException("Bu kullanıcı adı zaten alınmış.");
     }
   }
@@ -55,6 +65,9 @@ public class UserBusinessRules(IUserRepository _userRepository)
   {
     if (requestTargetId != currentUserId && userRole != "Admin")
     {
+      _logger.LogWarning("Yetkisiz işlem denemesi! Hedef Kullanıcı: {TargetId}, İşlemi Yapan: {CurrentUserId}, Rol: {UserRole}",
+          requestTargetId, currentUserId, userRole);
+
       throw new ForbiddenException("Bu işlem için yetkiniz bulunmamaktadır.");
     }
   }
@@ -63,6 +76,8 @@ public class UserBusinessRules(IUserRepository _userRepository)
   {
     if (!HashingHelper.VerifyPasswordHash(password, storedHash, storedKey))
     {
+      _logger.LogWarning("Hatalı mevcut şifre denemesi yapıldı.");
+
       throw new BusinessException("Mevcut şifreniz hatalı.");
     }
   }
@@ -71,6 +86,8 @@ public class UserBusinessRules(IUserRepository _userRepository)
   {
     if (!user.IsActive)
     {
+      _logger.LogWarning("Dondurulmuş hesaba erişim denemesi yakalandı. Kullanıcı ID: {UserId}", user.Id);
+
       throw new AuthorizationException("Hesabınız dondurulmuştur. Lütfen sistem yöneticisi ile iletişime geçin.");
     }
   }
@@ -78,6 +95,8 @@ public class UserBusinessRules(IUserRepository _userRepository)
   {
     if (HashingHelper.VerifyPasswordHash(newPassword, storedHash, storedKey))
     {
+      _logger.LogWarning("Kullanıcı yeni şifresini eskisiyle aynı yapmaya çalıştı.");
+
       throw new BusinessException("Yeni şifreniz eski şifrenizle aynı olamaz.");
     }
   }

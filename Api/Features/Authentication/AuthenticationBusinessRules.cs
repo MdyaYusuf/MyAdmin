@@ -4,7 +4,7 @@ using Api.Features.Users;
 
 namespace Api.Features.Authentication;
 
-public class AuthenticationBusinessRules
+public class AuthenticationBusinessRules(ILogger<AuthenticationBusinessRules> _logger)
 {
   public void UserCredentialsMustMatch(
     User? user,
@@ -12,6 +12,8 @@ public class AuthenticationBusinessRules
   {
     if (user == null || !HashingHelper.VerifyPasswordHash(password, user.PasswordHash, user.PasswordKey))
     {
+      _logger.LogWarning("Hatalı giriş denemesi: {Email}", user?.Email);
+
       throw new BusinessException("Eposta veya şifre hatalı.");
     }
   }
@@ -23,16 +25,22 @@ public class AuthenticationBusinessRules
     
     if (user == null)
     {
+      _logger.LogWarning("Geçersiz Refresh Token denemesi: Kullanıcı bulunamadı.");
+
       throw new NotFoundException("Oturum bulunamadı.");
     }
 
     if (user.RefreshToken != providedRefreshToken)
     {
+      _logger.LogWarning("Güvenlik Uyarısı: {UserId} idli kullanıcı için geçersiz Refresh Token kullanıldı.", user.Id);
+
       throw new AuthorizationException("Geçersiz oturum anahtarı.");
     }
 
     if (user.RefreshTokenExpiration < DateTime.UtcNow)
     {
+      _logger.LogWarning("Oturum süresi dolmuş token denemesi. Kullanıcı: {UserId}", user.Id);
+
       throw new AuthorizationException("Oturum süresi dolmuş, lütfen tekrar giriş yapın.");
     }
   }
@@ -41,6 +49,8 @@ public class AuthenticationBusinessRules
   {
     if (user == null)
     {
+      _logger.LogWarning("Oturum sonlandırma başarısız: Token sahibi kullanıcı bulunamadı.");
+
       throw new NotFoundException("Token bulunamadı.");
     }
   }
@@ -51,6 +61,8 @@ public class AuthenticationBusinessRules
   {
     if (!userPermissions.Contains(requiredPermission))
     {
+      _logger.LogWarning("Yetkisiz erişim denemesi! Gerekli İzin: {Permission}", requiredPermission);
+
       throw new ForbiddenException($"Bu işlem için '{requiredPermission}' iznine sahip olmanız gerekir.");
     }
   }

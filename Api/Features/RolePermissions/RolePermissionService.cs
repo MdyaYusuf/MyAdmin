@@ -2,6 +2,7 @@
 using Api.Core.Responses;
 using Api.Features.Permissions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Api.Features.RolePermissions;
 
@@ -10,13 +11,16 @@ public class RolePermissionService(
   IPermissionRepository _permissionRepository,
   RolePermissionBusinessRules _businessRules,
   PermissionMapper _mapper,
-  IUnitOfWork _unitOfWork) : IRolePermissionService
+  IUnitOfWork _unitOfWork,
+  ILogger<RolePermissionService> _logger) : IRolePermissionService
 {
   public async Task<ReturnModel<NoData>> AssignPermissionToRoleAsync(
     Guid roleId,
     Guid permissionId,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Role yetki atama işlemi başlatıldı. Rol ID: {RoleId}, Yetki ID: {PermissionId}", roleId, permissionId);
+
     await _businessRules.RolePermissionRelationMustNotBeDuplicateAsync(roleId, permissionId, cancellationToken);
 
     await _rolePermissionRepository.AddAsync(new RolePermission
@@ -26,6 +30,8 @@ public class RolePermissionService(
     }, cancellationToken);
 
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Yetki başarıyla role atandı. Rol ID: {RoleId}, Yetki ID: {PermissionId}", roleId, permissionId);
 
     return new ReturnModel<NoData>
     {
@@ -39,6 +45,8 @@ public class RolePermissionService(
     Guid roleId,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Role ait izinler listeleniyor. Rol ID: {RoleId}", roleId);
+
     var permissions = await _permissionRepository
       .Query(enableTracking: false)
       .Where(p => p.RolePermissions.Any(rp => rp.RoleId == roleId))
@@ -60,12 +68,16 @@ public class RolePermissionService(
     Guid permissionId,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Yetki rolden kaldırılıyor. Rol ID: {RoleId}, Yetki ID: {PermissionId}", roleId, permissionId);
+
     var rolePermission = await _rolePermissionRepository.GetAsync(
       predicate: rp => rp.RoleId == roleId && rp.PermissionId == permissionId,
       enableTracking: true,
       cancellationToken: cancellationToken);
 
     if (rolePermission == null) {
+
+      _logger.LogWarning("Yetki kaldırma işlemi başarısız: Belirtilen rol ve yetki ilişkisi bulunamadı. Rol ID: {RoleId}, Yetki ID: {PermissionId}", roleId, permissionId);
 
       return new ReturnModel<NoData>
       {
@@ -77,6 +89,8 @@ public class RolePermissionService(
 
     _rolePermissionRepository.Delete(rolePermission);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Yetki başarıyla rolden kaldırıldı. Rol ID: {RoleId}, Yetki ID: {PermissionId}", roleId, permissionId);
 
     return new ReturnModel<NoData>
     {
@@ -91,6 +105,8 @@ public class RolePermissionService(
     List<Guid> permissionIds,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Rol yetkileri senkronize ediliyor. Rol ID: {RoleId}, Hedef Yetki Sayısı: {TargetCount}", roleId, permissionIds.Count);
+
     var currentRolePermissions = await _rolePermissionRepository.GetAllAsync(
       filter: rp => rp.RoleId == roleId,
       enableTracking: true, 
@@ -124,6 +140,13 @@ public class RolePermissionService(
     if (toDelete.Any() || idsToAdd.Any())
     {
       await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+      _logger.LogInformation("Rol yetkileri senkronizasyonu tamamlandı. Rol ID: {RoleId}. Eklenen: {AddCount}, Silinen: {DeleteCount}",
+          roleId, idsToAdd.Count, toDelete.Count);
+    }
+    else
+    {
+      _logger.LogInformation("Rol yetkileri zaten güncel, herhangi bir değişiklik yapılmadı. Rol ID: {RoleId}", roleId);
     }
 
     return new ReturnModel<NoData>

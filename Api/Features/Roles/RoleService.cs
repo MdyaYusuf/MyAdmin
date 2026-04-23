@@ -2,6 +2,7 @@
 using Api.Core.Responses;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 
 namespace Api.Features.Roles;
@@ -12,16 +13,21 @@ public class RoleService(
   RoleBusinessRules _businessRules,
   IUnitOfWork _unitOfWork,
   IValidator<CreateRoleRequest> _createValidator,
-  IValidator<UpdateRoleRequest> _updateValidator) : IRoleService
+  IValidator<UpdateRoleRequest> _updateValidator,
+  ILogger<RoleService> _logger) : IRoleService
 {
   public async Task<ReturnModel<RoleResponseDto>> AddAsync(
     CreateRoleRequest request,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Yeni rol oluşturma işlemi başlatıldı. Rol Adı: {RoleName}", request.Name);
+
     var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
 
     if (!validationResult.IsValid)
     {
+      _logger.LogWarning("Rol oluşturma validasyonu başarısız oldu. Rol Adı: {RoleName}", request.Name);
+
       throw new ValidationException(validationResult.Errors);
     }
 
@@ -31,6 +37,8 @@ public class RoleService(
 
     await _roleRepository.AddAsync(createdRole, cancellationToken);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Rol başarıyla oluşturuldu. ID: {RoleId}, Ad: {RoleName}", createdRole.Id, createdRole.Name);
 
     RoleResponseDto response = _mapper.EntityToResponseDto(createdRole);
 
@@ -51,6 +59,8 @@ public class RoleService(
     bool withDeleted = false,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Tüm roller listeleniyor.");
+
     List<Role> roles = await _roleRepository.GetAllAsync(
       filter: filter,
       include: r => r.Include(r => r.RolePermissions).ThenInclude(rp => rp.Permission),
@@ -75,6 +85,8 @@ public class RoleService(
     bool enableTracking = false,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Kriterlere göre rol sorgulanıyor.");
+
     var role = await _roleRepository.GetAsync(
       predicate: predicate,
       include: r => r.Include(r => r.RolePermissions).ThenInclude(rp => rp.Permission),
@@ -83,6 +95,8 @@ public class RoleService(
 
     if (role == null)
     {
+      _logger.LogWarning("Aranan kriterlere uygun rol bulunamadı.");
+
       return new ReturnModel<RoleResponseDto>()
       {
         Success = false,
@@ -109,6 +123,8 @@ public class RoleService(
     bool enableTracking = false,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Rol detayları getiriliyor. ID: {RoleId}", id);
+
     Role role = await _businessRules.GetRoleIfExistAsync(id, include, enableTracking, cancellationToken);
 
     RoleResponseDto response = _mapper.EntityToResponseDto(role);
@@ -126,10 +142,14 @@ public class RoleService(
     Guid id,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Rol silme işlemi başlatıldı. ID: {RoleId}", id);
+
     Role role = await _businessRules.GetRoleIfExistAsync(id, enableTracking: true, cancellationToken: cancellationToken);
 
     _roleRepository.Delete(role);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Rol başarıyla silindi. ID: {RoleId}", id);
 
     return new ReturnModel<NoData>
     {
@@ -145,10 +165,14 @@ public class RoleService(
     UpdateRoleRequest request,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Rol güncelleme işlemi başlatıldı. ID: {RoleId}", id);
+
     var validationResult = await _updateValidator.ValidateAsync(request, cancellationToken);
 
     if (!validationResult.IsValid)
     {
+      _logger.LogWarning("Rol güncelleme validasyonu başarısız oldu. ID: {RoleId}", id);
+
       throw new ValidationException(validationResult.Errors);
     }
 
@@ -158,6 +182,8 @@ public class RoleService(
 
     _roleRepository.Update(existingRole);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Rol başarıyla güncellendi. ID: {RoleId}, Yeni Adı: {RoleName}", id, existingRole.Name);
 
     return new ReturnModel<NoData>()
     {

@@ -1,8 +1,11 @@
 ﻿using Api.Core.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace Api.Features.Permissions;
 
-public class PermissionBusinessRules(IPermissionRepository _permissionRepository)
+public class PermissionBusinessRules(
+  IPermissionRepository _permissionRepository,
+  ILogger<PermissionBusinessRules> _logger)
 {
   public async Task<Permission> GetPermissionIfExistAsync(
     Guid id,
@@ -18,6 +21,8 @@ public class PermissionBusinessRules(IPermissionRepository _permissionRepository
 
     if (permission == null)
     {
+      _logger.LogWarning("Yetki kaydı bulunamadı. Aranan ID: {PermissionId}", id);
+
       throw new NotFoundException("İzin bulunamadı.");
     }
 
@@ -35,6 +40,8 @@ public class PermissionBusinessRules(IPermissionRepository _permissionRepository
 
     if (exists)
     {
+      _logger.LogWarning("Yetki ismi çakışması! Bu isim zaten mevcut: {PermissionName}", name);
+
       throw new BusinessException("Bu izin adı zaten mevcut.");
     }
   }

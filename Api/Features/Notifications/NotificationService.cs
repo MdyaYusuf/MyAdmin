@@ -2,6 +2,7 @@
 using Api.Core.Responses;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 
 namespace Api.Features.Notifications;
@@ -12,16 +13,21 @@ public class NotificationService(
   NotificationBusinessRules _businessRules,
   IUnitOfWork _unitOfWork,
   IValidator<CreateNotificationRequest> _createValidator,
-  IValidator<UpdateNotificationRequest> _updateValidator) : INotificationService
+  IValidator<UpdateNotificationRequest> _updateValidator,
+  ILogger<NotificationService> _logger) : INotificationService
 {
   public async Task<ReturnModel<CreatedNotificationResponseDto>> AddAsync(
     CreateNotificationRequest request,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Yeni bildirim oluşturma işlemi başlatıldı. Hedef Kullanıcı: {TargetUserId}", request.UserId);
+
     var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
 
     if (!validationResult.IsValid)
     {
+      _logger.LogWarning("Bildirim oluşturma validasyonu başarısız oldu. Kullanıcı: {TargetUserId}", request.UserId);
+
       throw new ValidationException(validationResult.Errors);
     }
 
@@ -29,6 +35,8 @@ public class NotificationService(
 
     await _notificationRepository.AddAsync(createdNotification, cancellationToken);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Bildirim başarıyla oluşturuldu. ID: {NotificationId}, Tip: {Type}", createdNotification.Id, createdNotification.Type);
 
     CreatedNotificationResponseDto response = _mapper.EntityToCreatedResponseDto(createdNotification);
 
@@ -49,6 +57,8 @@ public class NotificationService(
     bool withDeleted = false,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Bildirimler listeleniyor.");
+
     List<Notification> notifications = await _notificationRepository.GetAllAsync(
       filter: filter,
       orderBy: q => q.OrderByDescending(n => n.CreatedDate),
@@ -73,6 +83,8 @@ public class NotificationService(
     bool enableTracking = false,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Belirli kriterlere göre bildirim sorgulanıyor. Kullanıcı: {UserId}", userId);
+
     var notification = await _notificationRepository.GetAsync(
       predicate: predicate,
       enableTracking: enableTracking,
@@ -85,6 +97,8 @@ public class NotificationService(
 
     if (notification == null)
     {
+      _logger.LogWarning("Kriterlere uygun bildirim bulunamadı. Kullanıcı: {UserId}", userId);
+
       return new ReturnModel<NotificationResponseDto>()
       {
         Success = false,
@@ -109,6 +123,8 @@ public class NotificationService(
     Guid userId,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Bildirim detayları getiriliyor. ID: {NotificationId}, Kullanıcı: {UserId}", id, userId);
+
     Notification notification = await _businessRules.GetNotificationAndCheckOwnershipAsync(id, userId);
 
     NotificationResponseDto response = _mapper.EntityToResponseDto(notification);
@@ -128,10 +144,14 @@ public class NotificationService(
     Guid userId,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Bildirim güncelleme işlemi başlatıldı. ID: {NotificationId}", id);
+
     var validationResult = await _updateValidator.ValidateAsync(request, cancellationToken);
 
     if (!validationResult.IsValid)
     {
+      _logger.LogWarning("Bildirim güncelleme validasyonu başarısız oldu. ID: {NotificationId}", id);
+
       throw new ValidationException(validationResult.Errors);
     }
 
@@ -141,6 +161,8 @@ public class NotificationService(
 
     _notificationRepository.Update(existingNotification);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Bildirim başarıyla güncellendi. ID: {NotificationId}", id);
 
     return new ReturnModel<NoData>()
     {
@@ -155,10 +177,14 @@ public class NotificationService(
     Guid userId,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Bildirim silme işlemi başlatıldı. ID: {NotificationId}, Kullanıcı: {UserId}", id, userId);
+
     Notification notification = await _businessRules.GetNotificationAndCheckOwnershipAsync(id, userId, enableTracking: true);
 
     _notificationRepository.Delete(notification);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Bildirim başarıyla silindi. ID: {NotificationId}", id);
 
     return new ReturnModel<NoData>()
     {
@@ -173,6 +199,8 @@ public class NotificationService(
     Guid userId,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Bildirim okundu olarak işaretleniyor. ID: {NotificationId}, Kullanıcı: {UserId}", id, userId);
+
     Notification notification = await _businessRules.GetNotificationAndCheckOwnershipAsync(id, userId, enableTracking: true);
 
     _businessRules.NotificationMustNotBeAlreadyRead(notification);
@@ -181,6 +209,8 @@ public class NotificationService(
     notification.ReadAt = DateTime.UtcNow;
 
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Bildirim başarıyla okundu olarak işaretlendi. ID: {NotificationId}", id);
 
     return new ReturnModel<NoData>()
     {
@@ -194,6 +224,8 @@ public class NotificationService(
     Guid userId,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Kullanıcının tüm bildirimleri okundu olarak işaretleniyor. Kullanıcı: {UserId}", userId);
+
     await _businessRules.AtLeastOneUnreadNotificationMustExistAsync(userId);
 
     var unreadNotifications = await _notificationRepository.GetAllAsync(
@@ -209,6 +241,8 @@ public class NotificationService(
 
     await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+    _logger.LogInformation("Kullanıcının ({UserId}) tüm bildirimleri başarıyla okundu olarak işaretlendi.", userId);
+
     return new ReturnModel<NoData>()
     {
       Success = true,
@@ -221,6 +255,8 @@ public class NotificationService(
     Guid userId,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Okunmamış bildirim sayısı sorgulanıyor. Kullanıcı: {UserId}", userId);
+
     var count = await _notificationRepository
       .Query(enableTracking: false)
       .CountAsync(n => n.UserId == userId && !n.IsRead, cancellationToken);

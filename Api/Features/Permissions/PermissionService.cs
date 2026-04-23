@@ -2,6 +2,7 @@
 using Api.Core.Responses;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 
 namespace Api.Features.Permissions;
@@ -12,16 +13,21 @@ public class PermissionService(
   PermissionBusinessRules _businessRules,
   IUnitOfWork _unitOfWork,
   IValidator<CreatePermissionRequest> _createValidator,
-  IValidator<UpdatePermissionRequest> _updateValidator) : IPermissionService
+  IValidator<UpdatePermissionRequest> _updateValidator,
+  ILogger<PermissionService> _logger) : IPermissionService
 {
   public async Task<ReturnModel<CreatedPermissionResponseDto>> AddAsync(
     CreatePermissionRequest request,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Yeni yetki oluşturma işlemi başlatıldı. Yetki Adı: {PermissionName}", request.Name);
+
     var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
 
     if (!validationResult.IsValid)
     {
+      _logger.LogWarning("Yetki oluşturma validasyonu başarısız oldu. Yetki Adı: {PermissionName}", request.Name);
+
       throw new ValidationException(validationResult.Errors);
     }
 
@@ -31,6 +37,8 @@ public class PermissionService(
 
     await _permissionRepository.AddAsync(createdPermission, cancellationToken);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Yetki başarıyla oluşturuldu. ID: {PermissionId}, Yetki Adı: {PermissionName}", createdPermission.Id, createdPermission.Name);
 
     CreatedPermissionResponseDto response = _mapper.EntityToCreatedResponseDto(createdPermission);
 
@@ -51,6 +59,8 @@ public class PermissionService(
     bool withDeleted = false,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Tüm yetkiler listeleniyor.");
+
     List<Permission> permissions = await _permissionRepository.GetAllAsync(
       filter: filter,
       include: p => p.Include(p => p.RolePermissions).ThenInclude(rp => rp.Role),
@@ -76,6 +86,8 @@ public class PermissionService(
     bool enableTracking = false,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Kriterlere göre yetki sorgulanıyor.");
+
     var permission = await _permissionRepository.GetAsync(
       predicate: predicate,
       include: p => p.Include(p => p.RolePermissions).ThenInclude(rp => rp.Role),
@@ -84,6 +96,8 @@ public class PermissionService(
 
     if (permission == null)
     {
+      _logger.LogWarning("Aranan kriterlere uygun yetki bulunamadı.");
+
       return new ReturnModel<PermissionResponseDto>()
       {
         Success = false,
@@ -110,6 +124,8 @@ public class PermissionService(
     bool enableTracking = false,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Yetki detayları getiriliyor. ID: {PermissionId}", id);
+
     Permission permission = await _businessRules.GetPermissionIfExistAsync(
       id,
       include: p => p.Include(p => p.RolePermissions).ThenInclude(rp => rp.Role),
@@ -131,10 +147,14 @@ public class PermissionService(
     Guid id,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Yetki silme işlemi başlatıldı. ID: {PermissionId}", id);
+
     Permission permission = await _businessRules.GetPermissionIfExistAsync(id, enableTracking: true, cancellationToken: cancellationToken);
 
     _permissionRepository.Delete(permission);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Yetki başarıyla silindi. ID: {PermissionId}", id);
 
     return new ReturnModel<NoData>
     {
@@ -150,10 +170,14 @@ public class PermissionService(
     UpdatePermissionRequest request,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Yetki güncelleme işlemi başlatıldı. ID: {PermissionId}", id);
+
     var validationResult = await _updateValidator.ValidateAsync(request, cancellationToken);
 
     if (!validationResult.IsValid)
     {
+      _logger.LogWarning("Yetki güncelleme validasyonu başarısız oldu. ID: {PermissionId}", id);
+
       throw new ValidationException(validationResult.Errors);
     }
 
@@ -168,6 +192,8 @@ public class PermissionService(
 
     _permissionRepository.Update(existingPermission);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Yetki başarıyla güncellendi. ID: {PermissionId}, Yeni Adı: {PermissionName}", id, request.Name);
 
     return new ReturnModel<NoData>()
     {

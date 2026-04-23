@@ -1,9 +1,11 @@
 ﻿using Api.Core.Exceptions;
-using Api.Features.Notifications;
+using Microsoft.Extensions.Logging;
 
 namespace Api.Features.Notifications;
 
-public class NotificationBusinessRules(INotificationRepository _notificationRepository)
+public class NotificationBusinessRules(
+  INotificationRepository _notificationRepository,
+  ILogger<NotificationBusinessRules> _logger)
 {
   public async Task<Notification> GetNotificationAndCheckOwnershipAsync(
     Guid id,
@@ -24,6 +26,8 @@ public class NotificationBusinessRules(INotificationRepository _notificationRepo
 
     if (notification == null)
     {
+      _logger.LogWarning("Bildirim bulunamadı. Aranan ID: {NotificationId}", id);
+
       throw new NotFoundException("Bildirim bulunamadı.");
     }
 
@@ -36,6 +40,9 @@ public class NotificationBusinessRules(INotificationRepository _notificationRepo
   {
     if (notification.UserId != userId)
     {
+      _logger.LogWarning("Yetkisiz bildirim erişim denemesi! Bildirim ID: {NotificationId}, Sahibi: {OwnerId}, Deneyen: {RequesterId}",
+          notification.Id, notification.UserId, userId);
+
       throw new ForbiddenException("Bu bildirime erişim yetkiniz yok.");
     }
   }
@@ -44,6 +51,8 @@ public class NotificationBusinessRules(INotificationRepository _notificationRepo
   {
     if (notification.IsRead)
     {
+      _logger.LogWarning("Bildirim zaten okunmuş olarak işaretlenmiş. Bildirim ID: {NotificationId}", notification.Id);
+
       throw new BusinessException("Bildirim zaten okundu olarak işaretlenmiş.");
     }
   }
@@ -54,6 +63,8 @@ public class NotificationBusinessRules(INotificationRepository _notificationRepo
 
     if (!hasUnread)
     {
+      _logger.LogWarning("Okunmamış bildirim bulunmamaktadır. Kullanıcı: {UserId}", userId);
+
       throw new BusinessException("Okunmamış bildiriminiz bulunmamaktadır.");
     }
   }

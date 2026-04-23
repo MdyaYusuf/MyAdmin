@@ -2,7 +2,9 @@
 
 namespace Api.Features.Roles;
 
-public class RoleBusinessRules(IRoleRepository _roleRepository)
+public class RoleBusinessRules(
+  IRoleRepository _roleRepository,
+  ILogger<RoleBusinessRules> _logger)
 {
   public async Task<Role> GetRoleIfExistAsync(
     Guid id,
@@ -14,6 +16,8 @@ public class RoleBusinessRules(IRoleRepository _roleRepository)
 
     if (role == null)
     {
+      _logger.LogWarning("Rol bulunamadı. Aranan ID: {RoleId}", id);
+
       throw new NotFoundException("Rol bulunamadı.");
     }
 
@@ -29,6 +33,8 @@ public class RoleBusinessRules(IRoleRepository _roleRepository)
 
     if (exists)
     {
+      _logger.LogWarning("Rol adı zaten mevcut. Çakışan ad: {RoleName}", name);
+
       throw new BusinessException("Bu rol adı zaten mevcut.");
     }
   }
@@ -39,6 +45,8 @@ public class RoleBusinessRules(IRoleRepository _roleRepository)
 
     if (systemRoles.Contains(roleName))
     {
+      _logger.LogWarning("Sistem rolü üzerinde yetkisiz işlem denemesi! Rol: {RoleName}", roleName);
+
       throw new BusinessException("Sistem rolleri üzerinde bu işlem yapılamaz.");
     }
   }

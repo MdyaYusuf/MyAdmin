@@ -2,6 +2,7 @@
 using Api.Core.Responses;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 
 namespace Api.Features.Activities;
@@ -11,14 +12,18 @@ public class ActivityService(
   ActivityMapper _mapper,
   ActivityBusinessRules _businessRules,
   IUnitOfWork _unitOfWork,
-  IValidator<CreateActivityRequest> _createValidator) : IActivityService
+  IValidator<CreateActivityRequest> _createValidator,
+  ILogger<ActivityService> _logger) : IActivityService
 {
   public async Task<ReturnModel<NoData>> AddAsync(CreateActivityRequest request, CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Yeni aktivite kaydı oluşturma işlemi başlatıldı.");
+
     var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
 
     if (!validationResult.IsValid)
     {
+      _logger.LogWarning("Aktivite validasyonu başarısız oldu.");
       throw new ValidationException(validationResult.Errors);
     }
 
@@ -26,6 +31,8 @@ public class ActivityService(
 
     await _activityRepository.AddAsync(createdActivity, cancellationToken);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Aktivite başarıyla kaydedildi. ID: {ActivityId}", createdActivity.Id);
 
     return new ReturnModel<NoData>()
     {
@@ -43,6 +50,8 @@ public class ActivityService(
     bool withDeleted = false,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Tüm aktiviteler listeleniyor.");
+
     List<Activity> activities = await _activityRepository.GetAllAsync(
       filter: filter,
       include: a => a.Include(a => a.User),
@@ -68,6 +77,8 @@ public class ActivityService(
     bool enableTracking = false,
     CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Belirli kriterlere göre aktivite sorgulanıyor.");
+
     var activity = await _activityRepository.GetAsync(
       predicate: predicate,
       include: a => a.Include(a => a.User),
@@ -76,6 +87,8 @@ public class ActivityService(
 
     if (activity == null)
     {
+      _logger.LogWarning("Aranan kriterlere uygun aktivite bulunamadı.");
+
       return new ReturnModel<ActivityResponseDto>()
       {
         Success = false,
@@ -97,6 +110,8 @@ public class ActivityService(
 
   public async Task<ReturnModel<ActivityResponseDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Aktivite detayları getiriliyor. ID: {ActivityId}", id);
+
     Activity activity = await _businessRules.GetActivityIfExistAsync(id);
 
     ActivityResponseDto response = _mapper.EntityToResponseDto(activity);
@@ -112,10 +127,14 @@ public class ActivityService(
 
   public async Task<ReturnModel<NoData>> RemoveAsync(Guid id, CancellationToken cancellationToken = default)
   {
+    _logger.LogInformation("Aktivite silme işlemi başlatıldı. ID: {ActivityId}", id);
+
     Activity activity = await _businessRules.GetActivityIfExistAsync(id);
 
     _activityRepository.Delete(activity);
     await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+    _logger.LogInformation("Aktivite başarıyla silindi. ID: {ActivityId}", id);
 
     return new ReturnModel<NoData>()
     {
