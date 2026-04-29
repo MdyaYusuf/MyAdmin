@@ -1,19 +1,25 @@
-import { Button } from "@/core/components/ui/button";
-import { apiClient } from "@/core/api/apiClient";
+import { AppRouter } from "../src/routes/AppRouter";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
-  const testApi = async () => {
-    await apiClient("/roles/test-delete", { method: "DELETE" });
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center h-screen gap-4">
-      <h1 className="text-3xl font-bold tracking-tight">MyAdmin Dashboard</h1>
-      <p className="text-muted-foreground">Screaming Architecture başarıyla kuruldu.</p>
-      <Button onClick={testApi} variant="destructive">
-        Jilet Gibi Test Et 🚀
-      </Button>
-    </div>
+    <>
+      <AppRouter />
+
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </>
   );
 }
 
