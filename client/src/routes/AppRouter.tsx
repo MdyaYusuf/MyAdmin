@@ -1,28 +1,35 @@
-// src/app/AppRouter.tsx
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { PATHS } from "./paths";
-import LandingPage from "@/features/landing/pages/LandingPage"; // Landing sayfasını import et
-
-// Placeholder'lar (Bunları zamanla gerçek feature sayfalarıyla değiştireceğiz)
-const LoginPage = () => <div>Giriş Sayfası</div>;
-const DashboardPage = () => <div>Admin Paneli</div>;
+import { Routes, Route } from 'react-router-dom';
+import LoginPage from '@/features/auth/pages/LoginPage';
+import RegisterPage from '@/features/auth/pages/RegisterPage';
+import ProtectedRoute from './ProtectedRoute';
+// Dashboard bileşenini içe aktar
 
 export const AppRouter = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Ana Sayfa (Landing) - Artık kök dizinde bu açılacak */}
-        <Route path={PATHS.HOME} element={<LandingPage />} />
+    <Routes>
+      {/* Herkese Açık Rotalar */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
-        {/* Auth Rotaları */}
-        <Route path={PATHS.LOGIN} element={<LoginPage />} />
+      {/* Korumalı Rotalar */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <div className="p-10 text-on-surface">Dashboard Area - Only for Authenticated Users</div>
+          </ProtectedRoute>
+        }
+      />
 
-        {/* Korumalı Rotalar (İleride PrivateRoute ile sarmalayacağız) */}
-        <Route path={PATHS.DASHBOARD} element={<DashboardPage />} />
-
-        {/* Tanımlanmayan yollar için ana sayfaya yönlendir */}
-        <Route path="*" element={<Navigate to={PATHS.HOME} replace />} />
-      </Routes>
-    </BrowserRouter>
+      {/* Rol Bazlı Korumalı Rotalar (Örnek) */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute requiredRole="Admin">
+            <div className="p-10">Admin Panel - High Security Zone</div>
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
 };

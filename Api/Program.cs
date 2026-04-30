@@ -32,6 +32,18 @@ Log.Logger = new LoggerConfiguration()
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 1. CORS Politikasını Tanımla
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy("FrontendPolicy", policy =>
+  {
+    policy.WithOrigins("http://localhost:3000") 
+          .AllowAnyHeader()
+          .AllowAnyMethod()
+          .AllowCredentials(); 
+  });
+});
+
 builder.Host.UseSerilog();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -90,8 +102,7 @@ if (app.Environment.IsDevelopment())
 {
   app.MapOpenApi();
 }
-
-app.UseHttpsRedirection();
+app.UseCors("FrontendPolicy");
 app.UseStaticFiles();
 
 app.UseAuthentication();

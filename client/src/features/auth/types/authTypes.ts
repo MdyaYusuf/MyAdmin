@@ -9,8 +9,6 @@ export interface RegisterUserRequest {
   username: string;
   email: string;
   password: string;
-  profileImageUrl: string | null;
-  bio: string | null;
 }
 
 export interface TokenResponseDto {

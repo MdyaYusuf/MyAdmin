@@ -1,25 +1,12 @@
 import { AppRouter } from "../src/routes/AppRouter";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
+/**
+ * App: Artık sadece yönlendirme katmanından sorumludur.
+ * Tüm sağlayıcılar AppProvider üzerinden yönetilmektedir.
+ */
 function App() {
   return (
-    <>
-      <AppRouter />
-
-      <ToastContainer
-        position="bottom-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-    </>
+    <AppRouter />
   );
 }
 
