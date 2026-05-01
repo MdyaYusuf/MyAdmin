@@ -22,17 +22,17 @@ using System.Text.Json.Serialization;
 
 Log.Logger = new LoggerConfiguration()
   .MinimumLevel.Information()
-  .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
-  .MinimumLevel.Override("System", LogEventLevel.Error)
+  .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+  .MinimumLevel.Override("System", LogEventLevel.Warning)
+  .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
   .WriteTo.Console()
   .WriteTo.File("Logs/log-.txt",
     rollingInterval: RollingInterval.Day,
-    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}") // Format düzenleme
+    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
   .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. CORS Politikasını Tanımla
 builder.Services.AddCors(options =>
 {
   options.AddPolicy("FrontendPolicy", policy =>

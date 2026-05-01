@@ -2,7 +2,7 @@ import { toast } from "react-toastify";
 import type { ApiResponse } from "@/core/types/ApiResponse";
 import type { TokenResponseDto } from "@/features/auth/types/authTypes";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5029/api";
 
 export const apiClient = async <T>(
   endpoint: string,

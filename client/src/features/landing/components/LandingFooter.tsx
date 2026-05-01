@@ -1,4 +1,5 @@
 export const LandingFooter = () => {
+
   return (
     <footer className="bg-surface py-12 border-t border-outline-variant/20">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">

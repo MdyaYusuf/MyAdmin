@@ -14,17 +14,16 @@ const LoginPage = () => {
 
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    // useAuth içindeki login (mutate) fonksiyonunu tetikler[cite: 1]
     login(formData);
   };
 
   return (
     <div className="bg-surface text-on-surface min-h-screen flex flex-col antialiased font-body">
-      {/* Header - Brand Identity[cite: 1] */}
+      {/* Header */}
       <header className="w-full py-6 px-6 flex justify-between items-center fixed top-0 z-50">
         <div className="text-2xl font-black tracking-tighter text-on-surface flex items-center gap-2">
           <Hexagon className="text-primary fill-primary w-8 h-8" />
-          NET_CORE_SAAS
+          MyAdmin
         </div>
         <Link to="/" className="text-sm font-medium text-primary hover:text-primary-container transition-colors">
           Return to Homepage
@@ -40,10 +39,11 @@ const LoginPage = () => {
             <p className="text-on-surface-variant text-base">Sign in to your Precision Architecture workspace.</p>
           </div>
 
-          {/* Login Card - Tonal Layering */}
+          {/* Login Card */}
           <div className="bg-surface-container-lowest rounded-xl p-8 shadow-[0_20px_40px_-15px_rgba(11,28,48,0.06)] border border-outline-variant/20">
             <form className="space-y-6" onSubmit={handleSubmit}>
-              {/* Email Input[cite: 1] */}
+
+              {/* Email Input */}
               <div>
                 <label className="block text-sm font-medium text-on-surface-variant mb-1.5" htmlFor="email">Email Address</label>
                 <div className="relative">
@@ -62,7 +62,7 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              {/* Password Input[cite: 1] */}
+              {/* Password Input */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-sm font-medium text-on-surface-variant" htmlFor="password">Password</label>
@@ -98,7 +98,7 @@ const LoginPage = () => {
 
           <div className="mt-8 text-center">
             <p className="text-sm text-on-surface-variant">
-              Don't have an account? <Link to="/register" className="font-semibold text-primary hover:text-primary-container transition-colors">Request Access</Link>
+              Don't have an account? <Link to="/register" className="font-semibold text-primary hover:text-primary-container transition-colors">Register</Link>
             </p>
           </div>
         </div>

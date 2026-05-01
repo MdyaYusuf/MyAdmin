@@ -14,13 +14,10 @@ export const useAuth = () => {
     mutationFn: (credentials: LoginRequest) => authService.login(credentials),
     onSuccess: (response) => {
       if (response.success && response.data) {
-        // 1. Token'ı kaydet
         localStorage.setItem("accessToken", response.data.accessToken);
 
-        // 2. Redux State'ini güncelle
         dispatch(setUser(response.data.user));
 
-        // 3. Yönlendir
         navigate("/dashboard");
       }
     },
@@ -31,7 +28,6 @@ export const useAuth = () => {
     mutationFn: (data: RegisterUserRequest) => authService.register(data),
     onSuccess: (response) => {
       if (response.success) {
-        // Kayıt başarılıysa login'e yönlendir veya otomatik login yap
         navigate("/login");
       }
     },

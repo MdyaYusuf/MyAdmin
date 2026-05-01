@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/core/components/ui/button"; 
 
 export const LandingNavbar = () => {
+
   return (
     <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-outline-variant/10">
       <div className="flex justify-between items-center max-w-7xl mx-auto px-6 h-16">

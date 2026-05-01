@@ -7,7 +7,7 @@ namespace Api.Features.Authentication;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AuthsController(IAuthenticationService _authService) : CustomBaseController
+public class AuthenticationController(IAuthenticationService _authService) : CustomBaseController
 {
   [HttpPost("register")]
   public async Task<IActionResult> Register(

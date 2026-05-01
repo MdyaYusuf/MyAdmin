@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { LayoutGrid, ArrowRight, User, Mail, Lock, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth'; // useAuth hook'unu içe aktar
+import { useAuth } from '../hooks/useAuth';
 
 const RegisterPage = () => {
-  // 1. useAuth hook'undan register fonksiyonunu ve yüklenme durumunu alıyoruz
   const { register, isRegisterLoading } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -21,41 +20,37 @@ const RegisterPage = () => {
     }));
   };
 
-  /**
-   * handleSubmit: Modern 'SyntheticEvent' kullanarak form gönderimini yönetir.
-   * React Query mutasyonunu tetikler.
-   */
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
 
-    // Backend'e gidecek olan 'RegisterUserRequest' paketini gönderiyoruz
     register(formData);
   };
 
   return (
     <div className="bg-surface text-on-surface min-h-screen w-full flex flex-col lg:flex-row antialiased font-body overflow-x-hidden">
 
-      {/* SOL SÜTUN: Form Alanı */}
+      {/* Form Alanı */}
       <main className="w-full lg:w-[45%] xl:w-[40%] flex flex-col justify-center px-8 md:px-16 lg:px-24 bg-surface-container-lowest z-10 py-12 shrink-0">
         <div className="max-w-md w-full mx-auto">
 
           <div className="mb-12 flex-shrink-0">
             <div className="flex items-center gap-2 mb-2">
               <LayoutGrid className="text-primary fill-primary w-6 h-6" />
-              <span className="font-display font-black tracking-tighter text-xl text-on-surface uppercase">Arch_Systems</span>
+              <span className="font-display font-black tracking-tighter text-xl text-on-surface uppercase">MyAdmin</span>
             </div>
           </div>
 
           <div className="mb-10 text-left">
             <h1 className="font-headline text-3xl font-bold tracking-tight text-on-surface mb-3" style={{ letterSpacing: '-0.02em' }}>
-              Orchestrate Your Identity.
+              Create Your Account
             </h1>
             <p className="text-base text-on-surface-variant leading-relaxed">
-              Enforce granular governance with .NET Core Precision Architecture[cite: 4].
+              Establish sovereign control with .NET Core Precision Architecture.
             </p>
           </div>
 
           <form className="space-y-5" onSubmit={handleSubmit}>
+
             {/* Username Input */}
             <div>
               <label className="block text-sm font-medium text-on-surface-variant mb-1.5" htmlFor="username">Username</label>
@@ -77,7 +72,7 @@ const RegisterPage = () => {
 
             {/* Email Input */}
             <div>
-              <label className="block text-sm font-medium text-on-surface-variant mb-1.5" htmlFor="email">Work Email</label>
+              <label className="block text-sm font-medium text-on-surface-variant mb-1.5" htmlFor="email">Email</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
                   <Mail size={18} />
@@ -119,12 +114,11 @@ const RegisterPage = () => {
                 disabled={isRegisterLoading}
                 className="w-full bg-primary text-white font-bold text-sm rounded-md py-3.5 hover:brightness-110 transition-all shadow-sm flex justify-center items-center gap-2 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                {/* Yüklenme durumunda spinner gösterilir */}
                 {isRegisterLoading ? (
                   <Loader2 className="animate-spin" size={18} />
                 ) : (
                   <>
-                    Establish Access
+                    Register
                     <ArrowRight size={18} />
                   </>
                 )}
@@ -141,7 +135,7 @@ const RegisterPage = () => {
         </div>
       </main>
 
-      {/* SAĞ SÜTUN */}
+      {/* Sağ Sütun */}
       <aside className="hidden lg:block lg:w-[55%] xl:w-[60%] relative bg-surface-container min-h-full shrink">
         <div className="absolute inset-0 w-full h-full">
           <img

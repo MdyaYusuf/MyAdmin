@@ -1,35 +1,43 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '@/features/auth/pages/LoginPage';
 import RegisterPage from '@/features/auth/pages/RegisterPage';
 import ProtectedRoute from './ProtectedRoute';
-// Dashboard bileşenini içe aktar
+import LandingPage from '../features/landing/pages/LandingPage';
+import DashboardPage from '@/features/dashboard/pages/DashboardPage';
+import { DashboardLayout } from '@/layouts/DashboardLayout';
 
 export const AppRouter = () => {
   return (
     <Routes>
-      {/* Herkese Açık Rotalar */}
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Korumalı Rotalar */}
       <Route
-        path="/dashboard"
         element={
           <ProtectedRoute>
-            <div className="p-10 text-on-surface">Dashboard Area - Only for Authenticated Users</div>
+            <DashboardLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="/dashboard" element={<DashboardPage />} />
 
-      {/* Rol Bazlı Korumalı Rotalar (Örnek) */}
+        <Route path="/analytics" element={<div className="p-10">Analytics Content</div>} />
+        <Route path="/settings" element={<div className="p-10">Settings Content</div>} />
+      </Route>
+
       <Route
         path="/admin"
         element={
           <ProtectedRoute requiredRole="Admin">
-            <div className="p-10">Admin Panel - High Security Zone</div>
+            <DashboardLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route index element={<div className="p-10">Admin Dashboard - High Security Zone</div>} />
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
