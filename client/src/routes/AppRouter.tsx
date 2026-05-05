@@ -4,7 +4,10 @@ import RegisterPage from '@/features/auth/pages/RegisterPage';
 import ProtectedRoute from './ProtectedRoute';
 import LandingPage from '../features/landing/pages/LandingPage';
 import DashboardPage from '@/features/dashboard/pages/DashboardPage';
+import UserManagementPage from '@/features/users/pages/UserManagementPage'; 
 import { DashboardLayout } from '@/layouts/DashboardLayout';
+import RolesAndPermissionsPage from '@/features/roles/pages/RolesAndPermissionsPage';
+import ActivitiesPage from '@/features/activities/pages/ActivitiesPage';
 
 export const AppRouter = () => {
   return (
@@ -20,12 +23,17 @@ export const AppRouter = () => {
           </ProtectedRoute>
         }
       >
+        {/* Ana Dashboard */}
         <Route path="/dashboard" element={<DashboardPage />} />
 
-        <Route path="/analytics" element={<div className="p-10">Analytics Content</div>} />
-        <Route path="/settings" element={<div className="p-10">Settings Content</div>} />
+        {/* Diğer sayfalar */}
+        <Route path="/team" element={<UserManagementPage />} />
+        <Route path="/roles" element={<RolesAndPermissionsPage />} />
+        <Route path="/activities" element={<ActivitiesPage />} /> 
+
       </Route>
 
+      {/* Admin Özel Alanı */}
       <Route
         path="/admin"
         element={
@@ -34,7 +42,6 @@ export const AppRouter = () => {
           </ProtectedRoute>
         }
       >
-        <Route index element={<div className="p-10">Admin Dashboard - High Security Zone</div>} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

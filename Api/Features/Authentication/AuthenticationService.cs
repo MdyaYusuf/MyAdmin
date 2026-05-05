@@ -71,46 +71,74 @@ public class AuthenticationService(
   }
 
   public async Task<ReturnModel<CreatedUserResponseDto>> RegisterAsync(
-    RegisterUserRequest request,
-    CancellationToken cancellationToken = default)
+     RegisterUserRequest request,
+     CancellationToken cancellationToken = default)
   {
-    _logger.LogInformation("Yeni kullanıcı kaydı oluşturuluyor: {Username}", request.Username);
+    _logger.LogInformation("Yeni kullanıcı kaydı süreci başlatıldı: {Username}", request.Username);
 
+    // 1. Validasyon ve İş Kuralları Kontrolü
     var validationResult = await _registerValidator.ValidateAsync(request, cancellationToken);
-
     if (!validationResult.IsValid)
     {
-      _logger.LogWarning("Kayıt validasyon hatası: {Username} ({Email})", request.Username, request.Email);
-
       throw new ValidationException(validationResult.Errors);
     }
 
     await _userBusinessRules.EmailMustBeUniqueAsync(request.Email, cancellationToken: cancellationToken);
     await _userBusinessRules.UsernameMustBeUniqueAsync(request.Username, cancellationToken: cancellationToken);
 
+    // 2. Kullanıcı Nesnesini Hazırla
     User createdUser = _mapper.RegisterToEntity(request);
-
-    var defaultRole = await _roleRepository.GetAsync(
-      r => r.Name == "User",
-      cancellationToken: cancellationToken);
-
-    if (defaultRole != null)
-    {
-      createdUser.UserRoles.Add(new UserRole
-      {
-        UserId = createdUser.Id,
-        RoleId = defaultRole.Id
-      });
-    }
 
     HashingHelper.CreatePasswordHash(request.Password, out string hash, out string key);
     createdUser.PasswordHash = hash;
     createdUser.PasswordKey = key;
+    createdUser.IsActive = true;
 
-    await _userRepository.AddAsync(createdUser, cancellationToken);
-    await _unitOfWork.SaveChangesAsync(cancellationToken);
+    // 3. AÇIK TRANSACTION BAŞLAT (SQLite için en güvenli yol)
+    using (var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken))
+    {
+      try
+      {
+        // A. Önce kullanıcıyı kaydediyoruz
+        await _userRepository.AddAsync(createdUser, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-    _logger.LogInformation("Kullanıcı kaydı başarıyla tamamlandı. Yeni ID: {UserId}", createdUser.Id);
+        // B. Kullanıcı ID'si artık veritabanı tarafından atandı. 
+        // Rolü şimdi bulup ekliyoruz.
+        var defaultRole = await _roleRepository.GetAsync(
+            r => r.Name == "User",
+            cancellationToken: cancellationToken);
+
+        if (defaultRole != null)
+        {
+          // İlişkiyi bağımsız bir nesne olarak oluşturuyoruz
+          var userRole = new UserRole
+          {
+            UserId = createdUser.Id, // Veritabanından dönen gerçek ID
+            RoleId = defaultRole.Id,
+            CreatedDate = DateTime.UtcNow
+          };
+
+          // Doğrudan koleksiyona ekliyoruz
+          createdUser.UserRoles.Add(userRole);
+
+          // C. İkinci kaydetme: Sadece UserRole tablosuna yansır
+          await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+
+        // Her şey başarılıysa işlemi tamamla (Commit)
+        await transaction.CommitAsync(cancellationToken);
+      }
+      catch (Exception ex)
+      {
+        // Bir hata olursa her şeyi geri al (Rollback)
+        await transaction.RollbackAsync(cancellationToken);
+        _logger.LogError(ex, "Kayıt işlemi sırasında veritabanı hatası oluştu.");
+        throw;
+      }
+    }
+
+    _logger.LogInformation("Kullanıcı ve rolü başarıyla kaydedildi. ID: {UserId}", createdUser.Id);
 
     CreatedUserResponseDto response = _mapper.EntityToCreatedResponseDto(createdUser);
 
@@ -122,7 +150,6 @@ public class AuthenticationService(
       StatusCode = 201
     };
   }
-
   public async Task<ReturnModel<TokenResponseDto>> RefreshTokenAsync(
     string refreshToken,
     CancellationToken cancellationToken)

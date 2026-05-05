@@ -9,12 +9,18 @@ interface StatCardProps {
   isBright?: boolean;
 }
 
+const colorMap = {
+  primary: 'bg-primary-fixed/20 text-primary',
+  secondary: 'bg-secondary-fixed/20 text-secondary',
+  error: 'bg-error-fixed/20 text-error',
+};
+
 export const StatCard = ({ title, value, trend, subText, badge, icon, color = 'primary', isBright }: StatCardProps) => {
   return (
     <div className={`${isBright ? 'bg-surface-bright' : 'bg-surface-container-lowest'} rounded-xl p-6 border border-outline-variant/20 hover:border-outline-variant/40 transition-colors flex flex-col justify-between h-40 relative overflow-hidden`}>
       <div className="flex justify-between items-start relative z-10">
         <span className="text-sm font-medium text-on-surface-variant">{title}</span>
-        <div className={`w-8 h-8 rounded-full bg-${color}-fixed/20 flex items-center justify-center text-${color}`}>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${colorMap[color]}`}>
           <span className="material-symbols-outlined text-[18px]">{icon}</span>
         </div>
       </div>
